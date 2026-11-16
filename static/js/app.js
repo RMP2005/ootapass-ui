@@ -6,6 +6,7 @@
 
   const NIGHT_END = 240;              // 00:00, in minutes after 20:00
   const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const REASON_LABEL = { food: "Food", transport: "Transport", time: "Time", "receiving capacity": "Receiving capacity" };
   const REASON_TEXT = {
     "food": "not enough suitable food in time",
     "transport": "every runner is busy or too far away",
@@ -73,7 +74,7 @@
   function renderStatus() {
     const { summary, baseline } = state.night;
     const short = summary.unmet;
-    $("#headline").textContent = `${summary.planned} of ${summary.requested} meals reach the gates tonight.`;
+    $("#headline").textContent = `${summary.planned} of ${summary.requested} meals planned for tonight`;
     if (!short.length) {
       $("#subline").textContent = "Every gate request is covered by the current plan.";
       $("#alertline").hidden = true;
@@ -82,11 +83,11 @@
         `${gateShort(u.gate)} is ${u.portions} short because ${REASON_TEXT[u.reason]}.`).join(" ");
       const alert = $("#alertline");
       alert.hidden = false;
-      alert.textContent = `Alert sent to partners: ${short.map((u) => u.alert).join("; ")}`;
+      alert.textContent = `Generated partner alert: ${short.map((u) => u.alert).join("; ")}`;
     }
     const max = Math.max(summary.requested, 1);
     $("#compare").innerHTML = `
-      <p class="compare-title">Same night, simple nearest-first method</p>
+      <p class="compare-title">Plan comparison · Same night, same inputs</p>
       <div class="bar-row ours"><span class="name">OotaPass</span>
         <span class="track"><span class="fill" style="width:${(summary.planned / max) * 100}%"></span></span>
         <span class="val">${summary.planned}/${summary.requested}</span></div>
@@ -160,6 +161,7 @@
 
   function placeNowline() {
     const axis = $("#axis");
+    if (!state.night) return;
     const x = axis.offsetLeft + (state.t / NIGHT_END) * axis.clientWidth;
     $("#nowline").style.left = `${x - 1}px`;
     axis.setAttribute("aria-valuenow", Math.round(state.t));
@@ -167,7 +169,7 @@
     $("#clock").textContent = clock(state.t);
     document.querySelectorAll("[data-clock]").forEach((n) => (n.textContent = clock(state.t)));
     const delivered = state.night.trips.filter((x) => x.arrive <= state.t).reduce((s, x) => s + x.portions, 0);
-    $("#delivered").innerHTML = `Delivered by ${clock(state.t)}: <strong>${delivered}</strong> of ${state.night.summary.planned} planned`;
+    $("#delivered").innerHTML = `Simulated arrivals by ${clock(state.t)}: <strong>${delivered}</strong> of ${state.night.summary.planned} planned`;
     document.querySelectorAll(".trip-bar").forEach((b) => {
       const trip = state.night.trips.find((x) => x.id === b.dataset.trip);
       if (trip) b.classList.toggle("done", state.t >= trip.arrive);
@@ -227,6 +229,7 @@
 
   // ------------------------------------------------------------------ map
 
+  let passportTrigger = null;
   let map, layers = {}, runnerMarkers = {}, routeLines = {};
 
   function initMap() {
@@ -257,7 +260,7 @@
 
     for (const trip of trips) {
       const approach = L.polyline([trip.from, trip.donor_loc], { color: "#7A8496", weight: 2, dashArray: "2 6", opacity: 0.8 });
-      const carry = L.polyline([trip.donor_loc, trip.gate_loc], { color: "#24316B", weight: 3.5, dashArray: "8 7", opacity: 0.9 });
+      const carry = L.polyline([trip.donor_loc, trip.gate_loc], { color: "#E2A11B", weight: 3.5, dashArray: "8 7", opacity: 0.9 });
       carry.on("mouseover", () => highlight(trip.id)).on("mouseout", () => highlight(null)).on("click", () => openPassport(trip.id));
       layers.routes.addLayer(approach).addLayer(carry);
       routeLines[trip.id] = carry;
@@ -267,7 +270,7 @@
     const usedGates = new Set(entities.filter((e) => e.kind === "request").map((e) => e.data.gate));
     for (const g of usedGates) {
       const h = hospitals[g];
-      const m = L.marker(h.loc, { icon: L.divIcon({ className: "", html: `<div class="m-gate${shortGates.has(g) ? " short" : ""}">${h.short[0]}</div>`, iconSize: [32, 32], iconAnchor: [16, 16] }) });
+      const m = L.marker(h.loc, { icon: L.divIcon({ className: "", html: `<div class="m-gate${shortGates.has(g) ? " short" : ""}"><span aria-hidden="true">${h.short[0]}</span><span class="sr-only">${esc(h.name)}</span></div>`, iconSize: [32, 32], iconAnchor: [16, 16] }) });
       m.bindTooltip(h.name, { direction: "top", offset: [0, -14] });
       layers.places.addLayer(m);
       bounds.push(h.loc);
@@ -275,7 +278,7 @@
     for (const e of entities.filter((x) => x.kind === "donor")) {
       const off = e.cancelled_at !== null && e.cancelled_at !== undefined;
       const letter = state.night.kinds[e.data.kind][0];
-      const m = L.marker(areas[e.data.area], { icon: L.divIcon({ className: "", html: `<div class="m-donor${off ? " off" : ""}">${letter}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) });
+      const m = L.marker(areas[e.data.area], { icon: L.divIcon({ className: "", html: `<div class="m-donor${off ? " off" : ""}"><span aria-hidden="true">${letter}</span><span class="sr-only">${esc(e.data.name)}: ${e.data.portions} meals</span></div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) });
       m.bindTooltip(`${esc(e.data.name)}: ${e.data.portions} meals of ${esc(e.data.item.toLowerCase())}${off ? " (cancelled)" : ""}`, { direction: "top", offset: [0, -12] });
       layers.places.addLayer(m);
       bounds.push(areas[e.data.area]);
@@ -319,7 +322,7 @@
       const line = routeLines[trip.id];
       if (!line) continue;
       const done = state.t >= trip.arrive;
-      line.setStyle(done ? { color: "#2E7D5A", dashArray: null, opacity: 0.45 } : { color: "#24316B", dashArray: "8 7", opacity: 0.9 });
+      line.setStyle(done ? { color: "#58C6B1", dashArray: null, opacity: 0.45 } : { color: "#E2A11B", dashArray: "8 7", opacity: 0.9 });
     }
   }
 
@@ -348,17 +351,17 @@
       const unmet = state.night.summary.unmet.filter((u) => u.request === r.id);
       const shortBy = unmet.reduce((s, u) => s + u.portions, 0);
       const pct = (n) => (n / Math.max(d.portions, 1)) * 100;
-      const row = el("div", { class: "gate-row" });
+      const row = el("div", { class: `gate-row${shortBy ? " has-shortfall" : ""}` });
       row.innerHTML = `
-        <h3>${esc(gateName(d.gate))}</h3>
+        <div class="gate-heading"><h3>${esc(gateName(d.gate))}</h3><span class="gate-deadline">By ${clock(d.need_by)}</span></div>
         <p class="need">${d.portions} meals, ${d.veg_only ? "vegetarian only" : "any food"}, needed by ${clock(d.need_by)}</p>
-        <div class="meter" role="img" aria-label="${delivered} delivered, ${planned} planned, ${shortBy} short of ${d.portions}">
+        <div class="meter" role="img" aria-label="${delivered} simulated arrivals, ${planned} planned, ${shortBy} short of ${d.portions}">
           <i class="m-delivered" style="width:${pct(delivered)}%"></i>
           <i class="m-planned" style="width:${pct(planned - delivered)}%"></i>
           <i class="m-short" style="width:${pct(shortBy)}%"></i>
         </div>
-        <p class="facts"><b>${planned}</b> planned on ${trips.length} trip${trips.length === 1 ? "" : "s"}, <b>${delivered}</b> delivered by ${clock(state.t)}</p>
-        ${unmet.map((u) => `<span class="reason">${u.portions} short: ${REASON_TEXT[u.reason]}<small>Alert sent: ${esc(u.alert)}</small></span>`).join("")}`;
+        <p class="facts"><b>${planned}</b> planned on ${trips.length} trip${trips.length === 1 ? "" : "s"}, <b>${delivered}</b> simulated arrivals by ${clock(state.t)}</p>
+        ${unmet.map((u) => `<span class="reason"><b>${u.portions} short · ${REASON_LABEL[u.reason]}</b><span>${REASON_TEXT[u.reason]}</span><small>Generated alert: ${esc(u.alert)}</small></span>`).join("")}`;
       root.append(row);
     }
   }
@@ -366,8 +369,8 @@
   // ------------------------------------------------------------------ panel: trips
 
   function tripPill(trip) {
-    if (state.t >= trip.arrive) return '<span class="pill done">Delivered</span>';
-    if (state.t >= trip.depart) return '<span class="pill moving">On the way</span>';
+    if (state.t >= trip.arrive) return '<span class="pill done">Arrived · Sim.</span>';
+    if (state.t >= trip.depart) return '<span class="pill moving">Moving · Sim.</span>';
     if (trip.check?.decision === "accepted") return '<span class="pill accepted">Checked</span>';
     return '<span class="pill planned">Planned</span>';
   }
@@ -376,7 +379,7 @@
     const root = $("#tab-trips");
     root.innerHTML = "";
     if (!state.night.trips.length) {
-      root.append(el("p", { class: "empty" }, "No trips are possible yet. Log surplus food or a runner to start a plan."));
+      root.append(el("p", { class: "empty" }, "No feasible trips in the current plan. Check gate shortfall reasons and available surplus or runners."));
       return;
     }
     root.append(el("p", { class: "section-title" }, "By pickup time. Open a trip to see its food passport."));
@@ -478,7 +481,7 @@
       const row = el("div", { class: `act ${a.kind}` });
       row.innerHTML = `<time>${clock(a.t)}</time><div><p>${esc(a.text)}</p>
         ${a.result ? `<p class="result">Re-planned: ${esc(a.result)}</p>` : ""}
-        ${(a.alerts || []).map((x) => `<p class="alert">Alert: ${esc(x)}</p>`).join("")}</div>`;
+        ${(a.alerts || []).map((x) => `<p class="alert">Generated alert: ${esc(x)}</p>`).join("")}</div>`;
       root.append(row);
     }
   }
@@ -517,6 +520,7 @@
   function openPassport(id) {
     const trip = state.night.trips.find((x) => x.id === id);
     if (!trip) return;
+    if (!state.openTrip) passportTrigger = document.activeElement;
     state.openTrip = id;
     const donor = entity(trip.donor).data;
     const check = trip.check;
@@ -530,7 +534,7 @@
           <h2 id="pp-title">${trip.portions} meals of ${esc(trip.item.toLowerCase())}</h2>
           <p class="sub">${esc(donor.name)} to ${esc(gateName(trip.gate))}</p>
         </div>
-        <figure class="qr"><img src="/api/qr/${trip.id}.svg" alt="QR code linking to this food passport"><figcaption>Scan at pickup and handover</figcaption></figure>
+        <figure class="qr"><img width="112" height="112" src="/api/qr/${trip.id}.svg" alt="QR code linking to this food passport"><figcaption>Food passport QR</figcaption></figure>
       </div>
       <table class="fields">
         <tr><th>Food</th><td>${esc(donor.item)}</td></tr>
@@ -545,8 +549,8 @@
         <li class="done"><b>Logged by donor</b><span>${donor.portions} meals offered, ready ${clock(donor.ready)}</span></li>
         <li class="${check?.decision === "accepted" ? "done" : ""}"><b>Pickup check by the NGO at ${clock(trip.pickup)}</b>
           <span>${check?.decision === "accepted" ? "Accepted" : "Waiting for the runner's check"}</span></li>
-        <li class="${delivered ? "done" : ""}"><b>Handover at ${esc(gateShort(trip.gate))} at ${clock(trip.arrive)}</b>
-          <span>${delivered ? "Delivered" : picked ? "On the way" : "Planned"}</span></li>
+        <li class="${delivered ? "done" : ""}"><b>Planned handover · ${esc(gateShort(trip.gate))} at ${clock(trip.arrive)}</b>
+          <span>${delivered ? "Arrived in simulation; not a delivery confirmation" : picked ? "Moving in simulation" : "Planned; not yet simulated"}</span></li>
       </ol>
       ${check?.decision === "accepted"
         ? `<p class="decision accepted">The NGO accepted this batch at the pickup check.</p>`
@@ -565,6 +569,7 @@
       <a class="print-link" href="/passport/${trip.id}" target="_blank" rel="noopener">Open printable label</a>`;
     const drawer = $("#drawer");
     drawer.hidden = false;
+    $(".tabpanels").inert = true;
     highlight(id);
     const boxes = [...body.querySelectorAll(".checklist input")];
     const accept = $("#pp-accept", body);
@@ -577,18 +582,23 @@
       if (await change(`/api/trips/${trip.id}/check`, { decision: "rejected", items: items() },
         (s) => `Batch rejected and removed. Re-planned: ${s.planned} of ${s.requested} meals now reach the gates.`)) closePassport();
     });
-    $("#drawer-close").focus();
+    $("#drawer-close").focus({ preventScroll: true });
+    if (window.matchMedia("(max-width: 999px)").matches) drawer.scrollIntoView({ block: "start" });
   }
 
   function closePassport() {
     $("#drawer").hidden = true;
+    $(".tabpanels").inert = false;
     state.openTrip = null;
+    if (passportTrigger?.isConnected) passportTrigger.focus({ preventScroll: true });
+    passportTrigger = null;
     highlight(null);
   }
 
   // ------------------------------------------------------------------ dialogs
 
   function bindDialogs() {
+    document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => b.closest("dialog").close()));
     document.querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => {
       const d = $(`#${b.dataset.open}`);
       if (d.id === "evidence") renderEvidence();
@@ -608,6 +618,12 @@
       e.preventDefault();
       const err = form.querySelector(".form-error");
       const fd = new FormData(form);
+      const button = form.querySelector('button[type="submit"]');
+      if (button.disabled) return;
+      const label = button.textContent;
+      button.disabled = true;
+      button.textContent = "Saving and re-planning…";
+      form.setAttribute("aria-busy", "true");
       try {
         state.night = await api(path, { ...build(fd), t: state.t });
         err.hidden = true;
@@ -617,6 +633,11 @@
       } catch (x) {
         err.textContent = x.message;
         err.hidden = false;
+        err.focus();
+      } finally {
+        button.disabled = false;
+        button.textContent = label;
+        form.removeAttribute("aria-busy");
       }
     });
 
