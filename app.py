@@ -14,7 +14,7 @@ import uuid
 
 import qrcode
 import qrcode.image.svg
-from flask import Flask, abort, jsonify, render_template, request
+from flask import Flask, abort, jsonify, render_template, request, send_from_directory
 
 from ootapass.night import build
 from ootapass.planner import clock
@@ -63,6 +63,25 @@ def find_trip(trip_id):
 @app.get("/")
 def index():
     return render_template("index.html")
+
+
+DESIGN = ROOT / "design"
+
+
+@app.get("/console")
+def console_redirect():
+    from flask import redirect
+    return redirect("/console/")
+
+
+@app.get("/console/")
+def console_page():
+    return send_from_directory(DESIGN, "console.html")
+
+
+@app.get("/console/<path:filename>")
+def console_assets(filename):
+    return send_from_directory(DESIGN, filename)
 
 
 @app.get("/passport/<trip_id>")

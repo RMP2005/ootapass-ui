@@ -32,6 +32,7 @@ python app.py
 ```
 
 Open <http://127.0.0.1:5000>. The demo night loads automatically. **Reset demo** restores it at any time.
+New night console: open http://127.0.0.1:5000/console/ (needs internet for the map tiles).
 
 The map background loads from OpenStreetMap (no API key needed), so it needs an internet connection. Everything else works offline.
 
