@@ -1,61 +1,21 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Food passport · {{ trip.item }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <style>
-    .passport-page { color-scheme: light; --canvas: #F2EEE4; --surface: #FFFDFA; --sunken: #E8E4DA; --ink: #172033; --ink-2: #4F5B70; --ink-3: #596579; --line: #D5D2C8; --night: #24316B; --leaf: #226849; --leaf-soft: #E3F1EA; --kumkum: #A72E24; --kumkum-soft: #FBE7E4; --haldi-soft: #FBEFD3; }
-    body { background: var(--canvas); padding: 32px 16px; }
-    .label-card { max-width: 560px; margin: 0 auto; background: var(--surface); border: 2px solid var(--ink); border-radius: 12px; padding: 24px 26px; }
-    .label-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ink); padding-bottom: 12px; margin-bottom: 14px; }
-    .label-head .wordmark { color: var(--night); }
-    .label-head .sub { font-size: 13px; color: var(--ink-2); }
-    .label-main { display: grid; grid-template-columns: 1fr 150px; gap: 18px; }
-    .label-main h1 { font-size: 26px; line-height: 1.15; letter-spacing: -0.015em; }
-    .label-main .veg { display: inline-block; margin-top: 8px; font-weight: 600; padding: 3px 10px; border-radius: 4px; }
-    .veg.yes { background: var(--leaf-soft); color: var(--leaf); }
-    .veg.no { background: var(--kumkum-soft); color: var(--kumkum); }
-    .label-main img { width: 150px; height: 150px; }
-    .useby { margin: 16px 0 6px; padding: 12px 14px; border-radius: 8px; background: var(--haldi-soft); }
-    .useby b { font-size: 24px; display: block; }
-    .useby span { font-size: 13px; color: #6B4A00; }
-    .passport-page .btn.primary { background: #24316B; color: #fff; }
-    .actions-row { max-width: 560px; margin: 16px auto 0; display: flex; gap: 8px; justify-content: flex-end; }
-    @media (max-width: 480px) { body { padding: 16px; } .label-card { padding: 20px; } .label-head { align-items: flex-start; flex-direction: column; gap: 8px; } .label-main { grid-template-columns: minmax(0,1fr) 96px; gap: 12px; } .label-main img { width: 96px; height: 96px; } .label-main h1 { font-size: 24px; overflow-wrap: anywhere; } }
-    @media print { body { background: #fff; padding: 0; } .actions-row { display: none; } .label-card { border-width: 1.5px; } }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Food passport · {{ trip.item }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+<style>
+html{color-scheme:light}.passport-page{--ink:#1D2834;--ink-2:#58616A;--ink-3:#58616A;--line:#D4D0C4;--sunken:#E6E0D3;background:#D9D6CC;color:#1D2834;padding:40px 24px}.print-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:840px;margin:0 auto 24px;font-size:13px}.print-nav a{color:#1D2834}.print-nav button{background:#172536;color:#F2EEE3}.label-card{max-width:840px;margin:auto;background:#F9F6ED;border:1px solid #9C9F97}.label-head{padding:24px 32px;background:#172536;color:#F2EEE3;display:flex;justify-content:space-between;align-items:center;gap:24px}.label-head .wordmark{font-size:24px;font-weight:500}.label-head p{font-size:11px;color:#C0C7D3;margin-top:4px}.record-number{font-size:12px;text-align:right}.record-number span{display:block;color:#C0C7D3;font-size:10px;margin-bottom:4px}.label-body{display:grid;grid-template-columns:minmax(0,1fr) 220px}.label-food{padding:32px}.label-food>p{font-size:12px;color:#58616A;margin-bottom:12px}.label-food h1{font-size:40px;line-height:1.1;overflow-wrap:anywhere}.meal-destination{font-size:16px;line-height:1.5;margin-top:16px}.diet{display:inline-flex;margin-top:16px;padding:4px 8px;border:1px solid #7E9680;font-size:12px;color:#285F4C}.diet.nonveg{color:#843125;border-color:#B58B80}.label-qr{padding:32px 24px;border-left:1px dashed #B6B2A7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}.label-qr img{width:160px;height:160px;background:#fff;padding:4px}.label-qr figcaption{font-size:11px;text-align:center;color:#58616A;max-width:140px}.useby{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:20px 32px;border-block:1px solid #D4D0C4;background:#EAE0C4}.useby b{display:block;font-size:30px;font-weight:500}.useby p{font-size:12px;color:#655635;max-width:280px}.useby span{font-size:11px;color:#655635}.label-details{padding:12px 32px 24px}.fields{margin:0}.fields th{width:28%;padding:12px 16px 12px 0}.fields td{padding:12px 0;font-weight:400}.label-foot{display:flex;gap:20px;align-items:flex-start;padding:20px 32px;border-top:1px solid #D4D0C4;font-size:11px;color:#58616A}.label-foot strong{color:#1D2834;font-weight:500;white-space:nowrap}.label-foot p{max-width:65ch}.print-note{max-width:840px;margin:16px auto 0;font-size:12px;color:#58616A}
+@media(max-width:600px){.passport-page{padding:20px 16px}.print-nav{align-items:flex-start}.label-head{padding:20px;align-items:flex-start;flex-direction:column;gap:16px}.record-number{text-align:left}.label-body{grid-template-columns:minmax(0,1fr) 112px}.label-food{padding:24px 20px}.label-food h1{font-size:28px}.label-qr{padding:20px 8px}.label-qr img{width:96px;height:96px}.label-qr figcaption{font-size:10px}.useby{padding:20px;flex-wrap:wrap;gap:12px}.useby b{font-size:28px}.label-details{padding:12px 20px 20px}.fields th{width:38%}.label-foot{padding:20px;flex-direction:column;gap:8px}.meal-destination{font-size:14px}}
+@media print{.passport-page{padding:0;background:#fff}.print-nav,.print-note{display:none}.label-card{border:1px solid #172536;break-inside:avoid;max-width:none}.label-head{background:#fff;color:#172536;border-bottom:2px solid #172536}.label-head p,.record-number span{color:#58616A}.label-qr{border-color:#172536}.useby{background:#fff;border-block:2px solid #172536}}
+</style>
 </head>
 <body class="passport-page">
-  <article class="label-card">
-    <div class="label-head">
-      <span class="wordmark">OotaPass food passport</span>
-      <span class="sub">Synthetic demo record</span>
-    </div>
-    <div class="label-main">
-      <div>
-        <h1>{{ trip.item }}</h1>
-        <p style="margin-top:6px;color:var(--ink-2)">{{ trip.portions }} meals for {{ gate.name }}</p>
-        <span class="veg {{ 'yes' if trip.veg else 'no' }}">{{ 'Vegetarian' if trip.veg else 'Non-vegetarian' }}</span>
-      </div>
-      <img width="150" height="150" src="{{ url_for('api_qr', trip_id=trip.id) }}" alt="QR code for this food passport">
-    </div>
-    <div class="useby">
-      <b>Use by {{ clock(donor.last_use) }}</b>
-      <span>Declared by the donor. Do not distribute after this time.</span>
-    </div>
-    <table class="fields">
-      <tr><th>Source</th><td>{{ donor.name }}, {{ kinds[donor.kind]|lower }} in {{ donor.area }}</td></tr>
-      <tr><th>Ready at</th><td>{{ clock(donor.ready) }}</td></tr>
-      <tr><th>Pickup check</th><td>{{ clock(trip.pickup) }}{% if trip.check and trip.check.decision == 'accepted' %}, accepted by the NGO{% endif %}</td></tr>
-      <tr><th>Planned handover</th><td>{{ gate.name }}, {{ clock(trip.arrive) }}</td></tr>
-      <tr><th>Record</th><td>{{ trip.id }}</td></tr>
-    </table>
-    <p class="disclaimer">This record is a prototype, not a compliance certificate. The donor is responsible until handover; the registered NGO checks and accepts each batch.</p>
-  </article>
-  <div class="actions-row">
-    <button class="btn primary" onclick="window.print()">Print label</button>
-  </div>
-</body>
-</html>
+<nav class="print-nav" aria-label="Label actions"><a href="/">← Back to dispatch</a><button class="btn primary" onclick="window.print()">Print label</button></nav>
+<article class="label-card">
+<header class="label-head"><div><span class="wordmark">OotaPass · Food passport</span><p>Synthetic demo record · Donor declaration &amp; planned handover</p></div><div class="record-number"><span>Batch / trip record</span>{{ trip.id }}</div></header>
+<div class="label-body"><div class="label-food"><p>Surplus food · {{ kinds[donor.kind] }}</p><h1>{{ trip.item }}</h1><div class="meal-destination">{{ trip.portions }} meals<br>For {{ gate.name }}</div><span class="diet {{ '' if trip.veg else 'nonveg' }}">{{ 'Vegetarian' if trip.veg else 'Non-vegetarian' }}</span></div><figure class="label-qr"><img width="160" height="160" src="{{ url_for('api_qr', trip_id=trip.id) }}" alt="QR code for this food passport"><figcaption>Scan to open this batch’s food passport</figcaption></figure></div>
+<div class="useby"><div><span>Donor-declared deadline</span><b>Use by {{ clock(donor.last_use) }}</b></div><p>Do not distribute after this time. OotaPass never extends the donor’s use-by time.</p></div>
+<div class="label-details"><table class="fields"><tr><th>Source</th><td>{{ donor.name }}, {{ kinds[donor.kind]|lower }} in {{ donor.area }}</td></tr><tr><th>Ready at</th><td>{{ clock(donor.ready) }}</td></tr><tr><th>Pickup check</th><td>{{ clock(trip.pickup) }}{% if trip.check and trip.check.decision == 'accepted' %} · Accepted by the NGO{% else %} · Check not recorded{% endif %}</td></tr><tr><th>Planned handover</th><td>{{ gate.name }} · {{ clock(trip.arrive) }}</td></tr><tr><th>Record</th><td>{{ trip.id }}</td></tr></table></div>
+<footer class="label-foot"><strong>Responsibility travels with the food.</strong><p>This is a prototype record, not a compliance certificate. The donor is responsible until handover; the registered NGO checks and accepts each batch.</p></footer>
+</article><p class="print-note">This label shows the plan and recorded pickup decision. It is not proof of delivery.</p>
+</body></html>

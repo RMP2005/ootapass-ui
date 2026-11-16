@@ -1,54 +1,57 @@
-# Frontend redesign: night dispatch desk
+# OotaPass frontend redesign
 
-The working Flask application at `/` now uses OotaPass’s near-black navy, cream and turmeric identity. Deadline lanes, route geometry and gate shortfall explanations carry the detail. Existing Schibsted Grotesk fonts and bundled Leaflet remain in use; no runtime packages were added.
+Both browser entry points share a rebuilt navy, cream and amber design language. The working Flask application at `/` keeps its API-backed workflows; `/console/` keeps its existing scripted Night board, Runner app and Plan comparison. The two remain explicitly distinguished.
 
-## Changes
+## What changed
 
-- Refined hierarchy, 4px spacing rhythm, tabular figures, readable secondary text and restrained weights.
-- Navy dispatch shell; amber planned routes/actions, teal accepted checks or simulated arrivals, and text-labelled red shortfalls.
-- Responsive map and gate board, a dedicated map legend footer, explicit marker names for assistive technology and a direct gate-board jump link.
-- Larger form controls, named dialogs, focused server-error feedback, pending submission state and functioning Close buttons. Previously, Close implicitly submitted the form; it now dismisses without an API write.
-- Food passport focus return, Escape dismissal and background tab-panel inertness while the passport is open. Cream printable labels retain their QR and donor-declared use-by details.
-- Presentation explicitly distinguishes planned allocation, simulated arrivals, recorded pickup acceptance and generated alert text. No delivery or external-notification action was added.
+- Persistent operations navigation replaces the original narrow panel tabs. Night board, Dispatch trips, Food & runners and Activity log each have a distinct full-width view; mobile navigation keeps all actions available.
+- Cream gate dispatch sheets show deadlines, dietary needs, receiving capacity, allocated portions, shortfall reasons and linked trip passports. The route map sits alongside the gates with its own legend and simulation context.
+- Trips use a pickup/arrival manifest with food, donor-to-gate route, runner, status and passport links. Food supply uses batch declarations with ready/use-by/allocation columns and separate runner capacity rows. Activity uses a chronological decision trail.
+- Request/surplus forms use numbered semantic field groups, paper surfaces, native controls, pending submission feedback and focused server errors.
+- Food passports use native modal dialogs, keyboard dismissal/focus return, QR records, donor-declared use-by emphasis, and the unchanged acceptance/rejection actions. Printable labels use a redesigned batch sheet with a separate QR column and planned-handover context.
+- Console Night board now has persistent navigation, a receiving sheet alongside the map, integrated map/replay zones and readable donor rows. Runner app is a two-column handover workbench; Plan comparison is a cream analytical sheet. All scripted recovery, QR/check and runner-sequence controls remain.
+- Console map fitting now responds to its actual container with padding suited to the new layout. Mobile labels stay inside the map. Added keyboard equivalents for console donor rows and replay; closed passports are hidden from assistive technology.
 
-## Scope
+## Preserved scope
 
-Baseline `f3709ce3007ebdf555325c038894def08c36dcc8`. Backend Python, schema/storage, all API routes and payloads, planner calculations, tests, dependencies, benchmark inputs/results and `design/` are byte-identical to baseline. The separate `/console/` remains the existing scripted demonstration. No integration was replaced and no feature removed.
+Baseline: `f3709ce3007ebdf555325c038894def08c36dcc8`. All Python/backend files, database/storage behavior, API routes/methods/payloads, planner allocation rules, tests, dependencies and benchmark inputs/results remain byte-identical. No runtime packages added. Console `buildPlan` and `runnerPos` remain unchanged; console JavaScript edits concern map layout, keyboard access, visibility and presentation text. No real integration was replaced, no business feature added, and no existing action removed.
 
-## Design sources and attribution
+## Design repositories and credit
 
-| Repository | Classification and actual use | Installation/licence |
+| Source | Actual use | Installation / licence |
 | --- | --- | --- |
-| [Unslop](https://github.com/heydamir/unslop) | Agent skill: product audit, approved direction, ordered spacing/colour/icon/copy/type/layout/detail/visual/motion review. Route map supplies the visual focus; no decorative image generation. | Installed project-locally in `.agents/skills/unslop`; CC BY 4.0, Damir Sokolovsky ([@heydamir](https://x.com/heydamir)). Instructions and original licence retained locally. |
-| [Open Design](https://github.com/nexu-io/open-design) | Reference workspace and example catalog. Inspected dashboard examples and design-system documentation; adapted token discipline, quiet surfaces and information hierarchy. Generic KPI templates and mock-data fallbacks were unsuitable. | Full workspace not installed. Installed its bundled `web-design-guidelines` skill locally for review (MIT, Copyright 2025 Vercel Labs). Workspace Apache 2.0; no workspace application code/assets copied. |
-| [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | Agent skill and local search tool: system guidance plus focused form-error and compact-label searches. Used responsive, contrast, focus and text-reflow guidance; rejected landing-page structure, font and palette suggestions that conflicted with OotaPass. | Documented `npx ui-ux-pro-max-cli init --ai codex` succeeded; placed in project `.agents/skills/ui-ux-pro-max`. MIT, Copyright 2024 Next Level Builder. Licence retained locally. |
+| [Unslop](https://github.com/heydamir/unslop), Damir Sokolovsky ([@heydamir](https://x.com/heydamir)) | Audit; approved dispatch-desk direction; spacing, colour, icon, copy, typography, composition, detail, product-visual and motion passes. The map and dispatch records carry the detail. | Project-local skill installed; CC BY 4.0 attribution and original licence retained. |
+| [Open Design](https://github.com/nexu-io/open-design) | Reference/example workspace: design-system contracts, IBM/Carbon reference principles of productive density and surface zoning, hierarchy and state-coverage resources. Adapted principles to OotaPass, retaining its type and palette. Bundled Web Interface Guidelines used for accessibility review. | Full workspace not installed or copied. Workspace Apache 2.0; installed guidelines skill is MIT, Copyright 2025 Vercel Labs. No brand assets or example application code copied. |
+| [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | Logistics/Delivery search identified operations monitoring and route analytics; focused navigation/form/reflow guidance informed the manifest and responsive views. Rejected unrelated landing-page and replacement-palette defaults. | Documented CLI installation succeeded; MIT, Copyright 2024 Next Level Builder. Original licence retained. |
 
-Skills are local development tools, excluded through `.git/info/exclude`; no skill payloads or backend dependencies are included in this PR. They are available to a new agent session, and their instructions were read directly in this session. No paid design service was used.
+Skills are installed locally under `.agents/skills` and excluded from Git through the local exclude file; they are development tools, not runtime application dependencies. No paid image-generation service used, no stack migration.
 
-## Verification
+## Validation
 
-- Existing `python -m unittest -v`: **7/7 pass**, both baseline and final.
-- `python -m bench.benchmark`: **500 synthetic nights, seed 2026**, exact original results: coverage **55.3% / 49.2%**, more/same/fewer **166 / 309 / 25**, travel per meal **0.238 / 0.240 km**. `bench/results.json` unchanged.
-- Isolated Flask test-client smoke: request validation/save, surplus save, cancellation, acceptance/rejection, passport/QR, reset, zero-trip state and benchmark all pass. No test files modified.
-- Actual browser flows: request error + save, surplus save, Bakery C cancellation at 20:40 (**120/140 vs 100/140**, NIMHANS **20 short / Food**), runner-dropout confirmation + cancellation, Gates/Trips/Supply/Activity, replay play/pause/speed/keyboard scrub, map zoom, passport open/check/accept/reject/Escape, label render, evidence and empty states.
-- No horizontal page overflow at **375, 390, 768, 1024, 1440px**. Mobile form and passport checked. No captured browser console warnings or JavaScript errors.
-- `node --check static/js/app.js` and `git diff --check` pass.
-- Primary/secondary/muted text contrast on main surfaces and action/error/accepted text pairs exceed **4.5:1**. Reduced-motion rules retained and reviewed.
+- Original tests: **7/7 pass** before and after.
+- Benchmark: **500 synthetic nights, seed 2026**, exact original results: coverage **55.3% / 49.2%**, more/same/fewer **166 / 309 / 25**, travel per meal **0.238 / 0.240 km**. Result file unchanged.
+- Isolated API smoke passes: request validation/save, surplus save, donor cancellation, pickup acceptance/rejection, passport/QR, reset, no-trip state and benchmark.
+- Working browser app: all four navigation views, request error/save, surplus save, cancellation/replanning, passport acceptance/Escape, printable label, mobile form/passport and keyboard navigation. Bakery C at 20:40 remains **120/140 vs 100/140**, NIMHANS **20 short / Food**. Earlier map zoom/replay/runner-dropout/rejection/evidence flows are retained; API smoke rechecks rejection.
+- Console browser: keyboard replay into shortfall, recovery search/acceptance, donor passport via keyboard, all three checks, complete runner pickup → arrival → QR → handover → replay, comparison **120 vs 100**, all three view switches.
+- All four working views and all three console views: no horizontal page overflow at **375, 768, 1024, 1440px**. Additional form/passport/label checks at **390px**. Mobile map labels measured inside the viewport.
+- No captured browser JavaScript warnings/errors in final responsive checks. Syntax and whitespace checks pass.
 
-Limits: verification used the Chromium-based in-app browser. Safari/Firefox and physical print output were not tested. Reduced-motion CSS was reviewed without OS preference emulation. Map tiles still need network, as before. No actual partner messaging or delivery confirmation backend exists; the UI now labels generated alerts and simulated arrivals accordingly.
+Limits: Chromium-based in-app browser only. Physical printing and OS reduced-motion emulation were not tested; print and reduced-motion CSS reviewed. Maps still need tile-network access. Console remains a scripted demonstration and its confirmations are not live operational events.
 
 ## Screenshots
 
-[Desktop before](frontend/before-desktop.jpg) · [Desktop after](frontend/after-desktop.jpg) · [Mobile before](frontend/before-mobile.jpg) · [Mobile after](frontend/after-mobile.jpg) · [Cancellation](frontend/after-cancellation.jpg) · [Printable label](frontend/after-label.jpg)
+[Working app before](frontend/before-desktop.jpg) · [Working app after](frontend/after-desktop.jpg) · [Mobile](frontend/after-mobile.jpg) · [Dispatch trips](frontend/trips.jpg) · [Supply](frontend/supply.jpg) · [Passport](frontend/passport.jpg) · [Label](frontend/after-label.jpg)
 
-![Redesigned working application](frontend/after-desktop.jpg)
+[Console before](frontend/console-before.jpg) · [Night board](frontend/console-desktop.jpg) · [Console mobile](frontend/console-mobile.jpg) · [Runner app](frontend/runner.jpg) · [Plan comparison](frontend/comparison.jpg)
+
+![Rebuilt console](frontend/console-desktop.jpg)
 
 ## Run locally
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-.venv/bin/python app.py
+.venv/bin/python -m flask --app app run --port 5055
 ```
 
-Open `http://127.0.0.1:5000/` for the working app, or `http://127.0.0.1:5000/console/` for the unchanged scripted demo. To use a separate QA database and port, prefix the run command with `OOTAPASS_DB=/tmp/ootapass-qa.db PORT=5055`.
+Open `http://127.0.0.1:5055/console/` for the redesigned walkthrough, or `http://127.0.0.1:5055/` for the redesigned working planner. To isolate QA data, prefix the command with `OOTAPASS_DB=/tmp/ootapass-qa.db`.

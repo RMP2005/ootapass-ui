@@ -7,7 +7,7 @@
 > **Team C1CORE**, BMS Institute of Technology and Management, Bengaluru · Rewired 2026 ("The Invisible City"), online round
 > **All data in this prototype is synthetic.** Donor names, quantities and requests are invented for testing.
 
-![OotaPass night console](docs/console.png)
+![OotaPass night console](docs/frontend/console-desktop.jpg)
 
 ---
 

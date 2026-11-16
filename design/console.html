@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script src="./dispatch.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -12,6 +13,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+<link rel="stylesheet" href="./dispatch.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -31,42 +33,43 @@ button{font-family:inherit}
 .leaflet-container{background:#0A0F1C;font-family:'Schibsted Grotesk',system-ui,sans-serif}
 </style>
 </helmet>
-<div style="height:100vh;min-height:420px;display:flex;flex-direction:column;background:#0A0F1C;overflow:hidden">
-  <header style="height:60px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;min-width:0;border-bottom:1px solid rgba(255,255,255,.07);background:#0C1222;position:relative;z-index:20">
+<div class="demo-shell" style="height:100vh;min-height:420px;display:flex;flex-direction:column;background:#0A0F1C;overflow:hidden">
+  <header class="demo-rail" style="height:60px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;min-width:0;border-bottom:1px solid rgba(255,255,255,.07);background:#0C1222;position:relative;z-index:20">
     <div style="display:flex;align-items:center;gap:10px">
       <div style="width:26px;height:26px;border-radius:50%;border:2px solid #F5A524;display:grid;place-items:center;box-shadow:0 0 14px rgba(245,165,36,.45)"><div style="width:8px;height:8px;border-radius:50%;background:#F5A524"></div></div>
       <div style="font-weight:800;font-size:19px;letter-spacing:-.02em">OotaPass</div>
       <div style="font-family:'Noto Sans Kannada',sans-serif;font-weight:800;font-size:15px;color:#F5A524;padding:1px 8px;border:1px solid rgba(245,165,36,.35);border-radius:6px">ಊಟ</div>
     </div>
-    <div style="display:{{ wideDisplay }};font-size:13px;color:#8A94A7;padding-left:16px;border-left:1px solid rgba(255,255,255,.08);white-space:nowrap">Night of 16 Nov · South Bengaluru</div>
-    <nav style="margin:0 auto;display:flex;min-width:0;flex-shrink:1;overflow:hidden;gap:4px;padding:4px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px">
+    <div class="demo-region" style="display:{{ wideDisplay }};font-size:13px;color:#8A94A7;padding-left:16px;border-left:1px solid rgba(255,255,255,.08);white-space:nowrap">Night of 16 Nov · South Bengaluru</div>
+    <nav aria-label="Console views" class="demo-navigation" style="margin:0 auto;display:flex;min-width:0;flex-shrink:1;overflow:hidden;gap:4px;padding:4px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px">
       <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="3">
-        <button onClick="{{ tb.onClick }}" style="border:0;cursor:pointer;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap;background:{{ tb.bg }};color:{{ tb.color }};transition:background .2s,color .2s">{{ tb.label }}</button>
+        <button aria-pressed="{{ tb.selected }}" onClick="{{ tb.onClick }}" style="border:0;cursor:pointer;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap;background:{{ tb.bg }};color:{{ tb.color }};transition:background .2s,color .2s">{{ tb.label }}</button>
       </sc-for>
     </nav>
-    <div style="display:{{ wideFlex }};align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.08em;color:#8A94A7;white-space:nowrap;padding:5px 10px;border:1px dashed rgba(255,255,255,.15);border-radius:6px">SIMULATION · SYNTHETIC DATA</div>
+    <div class="demo-synthetic" style="display:{{ wideFlex }};align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.08em;color:#8A94A7;white-space:nowrap;padding:5px 10px;border:1px dashed rgba(255,255,255,.15);border-radius:6px">Scripted demo · Synthetic data</div>
     <button onClick="{{ reset }}" style="cursor:pointer;background:transparent;color:#E8ECF3;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;white-space:nowrap" style-hover="background:rgba(255,255,255,.06)">Reset demo</button>
   </header>
 
-  <main style="flex:1;min-height:0;position:relative">
+  <main class="demo-main" style="flex:1;min-height:0;position:relative">
+    <div class="demo-titlebar"><div><p>Scripted walkthrough / South Bengaluru</p><h1>Tonight’s food-recovery desk</h1></div><a href="/">Open working app ↗</a></div>
     <!-- NIGHT BOARD -->
-    <div style="position:absolute;inset:0;display:{{ boardDisplay }};grid-template-columns:minmax(0,1fr) 410px">
-      <div style="position:relative;min-width:0;overflow:hidden">
-        <div ref="{{ mapRef }}" style="position:absolute;inset:0;background:#0A0F1C"></div>
-        <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(6,9,18,.75) 100%);z-index:400"></div>
+    <div class="demo-board" style="position:absolute;inset:0;display:{{ boardDisplay }};grid-template-columns:minmax(0,1fr) 410px">
+      <div class="demo-map" style="position:relative;min-width:0;overflow:hidden">
+        <div class="demo-map-canvas" ref="{{ mapRef }}" style="position:absolute;inset:0;background:#0A0F1C"></div>
+        <div class="demo-vignette" style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(6,9,18,.75) 100%);z-index:400"></div>
 
-        <div style="position:absolute;top:16px;left:16px;z-index:500;width:{{ cardW }};padding:{{ cardPad }};border-radius:14px;background:rgba(12,18,34,.78);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08)">
-          <div style="display:{{ fullBlock }};font-size:11px;font-weight:600;letter-spacing:.1em;color:#8A94A7">TONIGHT · 3 GATES · 3 RUNNERS</div>
+        <div class="demo-summary" style="position:absolute;top:16px;left:16px;z-index:500;width:{{ cardW }};padding:{{ cardPad }};border-radius:14px;background:rgba(12,18,34,.78);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08)">
+          <div style="display:{{ fullBlock }};font-size:11px;font-weight:600;letter-spacing:.1em;color:#8A94A7">Tonight’s allocation · 3 gates · 3 runners</div>
           <div style="display:flex;align-items:baseline;gap:6px;margin-top:{{ numMt }}">
             <div style="font-size:{{ numSize }};line-height:.95;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:{{ headColor }};transition:color .4s">{{ shown }}</div>
             <div style="font-size:26px;font-weight:700;color:#8A94A7">/ 140</div>
           </div>
-          <div style="font-size:{{ subSize }};font-weight:500;margin-top:4px">meals reach the gates tonight</div>
+          <div style="font-size:{{ subSize }};font-weight:500;margin-top:4px">meals planned for the gates tonight</div>
           <div style="display:{{ fullBlock }};margin-top:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><div style="height:100%;width:{{ deliveredPct }};background:#3FD0C9;transition:width .3s"></div></div>
           <div style="display:{{ fullFlex }};justify-content:space-between;margin-top:7px;font-size:12px;color:#8A94A7"><span>{{ deliveredText }}</span><span style="color:{{ shortColor }};font-weight:600">{{ shortText }}</span></div>
         </div>
 
-        <div style="position:absolute;left:20px;bottom:118px;z-index:500;display:{{ fullFlex }};gap:16px;font-size:11px;color:#8A94A7;padding:8px 12px;border-radius:8px;background:rgba(12,18,34,.7);backdrop-filter:blur(6px)">
+        <div class="demo-legend" style="position:absolute;left:20px;bottom:118px;z-index:500;display:{{ fullFlex }};gap:16px;font-size:11px;color:#8A94A7;padding:8px 12px;border-radius:8px;background:rgba(12,18,34,.7);backdrop-filter:blur(6px)">
           <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#F5A524;box-shadow:0 0 8px #F5A524"></div>Donor lot</div>
           <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;border:2px solid #3FD0C9"></div>Hospital gate</div>
           <div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff"></div>Runner</div>
@@ -84,7 +87,7 @@ button{font-family:inherit}
           <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-radius:999px;background:#121A2E;border:1px solid rgba(245,165,36,.4);font-weight:600;font-size:14px">{{ spinner }}Re-planning the night from {{ clock }}…</div>
         </div>
 
-        <div style="position:absolute;left:20px;right:20px;bottom:20px;z-index:550;padding:12px 16px 10px;border-radius:14px;background:rgba(12,18,34,.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:16px">
+        <div class="demo-replay" style="position:absolute;left:20px;right:20px;bottom:20px;z-index:550;padding:12px 16px 10px;border-radius:14px;background:rgba(12,18,34,.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:16px">
           <button onClick="{{ togglePlay }}" style="flex:none;width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;background:#F5A524;color:#1A1204;font-weight:800;font-size:13px;box-shadow:0 0 20px rgba(245,165,36,.35)">{{ playLabel }}</button>
           <div style="flex:none;width:86px">
             <div style="font-size:28px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1">{{ clock }}</div>
@@ -95,7 +98,7 @@ button{font-family:inherit}
             </div>
           </div>
           <div style="flex:1;min-width:0">
-            <div ref="{{ trackRef }}" onPointerDown="{{ scrubDown }}" onPointerMove="{{ scrubMove }}" onPointerUp="{{ scrubUp }}" style="position:relative;height:30px;cursor:pointer;touch-action:none">
+            <div role="slider" tabindex="0" aria-label="Console replay time" aria-valuemin="0" aria-valuemax="240" aria-valuenow="{{ replayMinute }}" aria-valuetext="{{ clock }}" onKeyDown="{{ scrubKey }}" ref="{{ trackRef }}" onPointerDown="{{ scrubDown }}" onPointerMove="{{ scrubMove }}" onPointerUp="{{ scrubUp }}" style="position:relative;height:30px;cursor:pointer;touch-action:none">
               <div style="position:absolute;left:0;right:0;top:14px;height:3px;border-radius:2px;background:rgba(255,255,255,.1)"></div>
               <div style="position:absolute;left:0;top:14px;height:3px;border-radius:2px;width:{{ progressPct }};background:linear-gradient(90deg,rgba(245,165,36,.3),#F5A524)"></div>
               <sc-for list="{{ marks }}" as="mk" hint-placeholder-count="4">
@@ -110,14 +113,14 @@ button{font-family:inherit}
           </div>
         </div>
 
-        <div style="position:absolute;top:0;right:0;bottom:0;width:380px;z-index:800;transform:translateX({{ drawerX }});transition:transform .5s cubic-bezier(.2,.8,.2,1);background:#0E1528;border-left:1px solid rgba(255,255,255,.08);box-shadow:-20px 0 50px rgba(0,0,0,.45);overflow-y:auto">
+        <div class="demo-passport" aria-hidden="{{ passportClosed }}" style="position:absolute;top:0;right:0;bottom:0;width:380px;z-index:800;transform:translateX({{ drawerX }});transition:transform .5s cubic-bezier(.2,.8,.2,1);background:#0E1528;border-left:1px solid rgba(255,255,255,.08);box-shadow:-20px 0 50px rgba(0,0,0,.45);overflow-y:auto">
           <div style="padding:18px 20px;display:flex;flex-direction:column;gap:16px">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div>
                 <div style="font-size:11px;font-weight:600;letter-spacing:.1em;color:#F5A524">FOOD PASSPORT</div>
                 <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#8A94A7;margin-top:2px">{{ pp.batch }}</div>
               </div>
-              <button onClick="{{ closePassport }}" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#E8ECF3;cursor:pointer;font-size:16px">×</button>
+              <button aria-label="Close food passport" tabindex="{{ passportTabIndex }}" onClick="{{ closePassport }}" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#E8ECF3;cursor:pointer;font-size:16px">×</button>
             </div>
             <sc-if value="{{ pp.cancelled }}" hint-placeholder-val="{{ false }}">
               <div style="padding:10px 12px;border-radius:10px;background:rgba(240,82,74,.12);border:1px solid rgba(240,82,74,.4);font-size:13px;color:#FFB4AE">Cancelled by donor at {{ pp.cancelTime }}. Its trips were removed and the night re-planned.</div>
@@ -173,7 +176,7 @@ button{font-family:inherit}
               <div style="font-size:11px;font-weight:600;letter-spacing:.1em;color:#8A94A7;margin-bottom:8px">NGO CHECK AT PICKUP</div>
               <div style="display:flex;flex-direction:column;gap:6px">
                 <sc-for list="{{ pp.checks }}" as="ck" hint-placeholder-count="3">
-                  <button onClick="{{ ck.onClick }}" style="display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;padding:9px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);color:#E8ECF3;font-size:13px">
+                  <button tabindex="{{ passportTabIndex }}" onClick="{{ ck.onClick }}" style="display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;padding:9px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);color:#E8ECF3;font-size:13px">
                     <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ ck.color }};background:{{ ck.fill }};display:grid;place-items:center;color:#0A0F1C;font-size:11px;font-weight:800;transition:all .2s">{{ ck.mark }}</div>{{ ck.label }}
                   </button>
                 </sc-for>
@@ -184,12 +187,12 @@ button{font-family:inherit}
         </div>
       </div>
 
-      <aside style="min-width:0;overflow-y:auto;overflow-x:hidden;border-left:1px solid rgba(255,255,255,.07);background:#0C1222;padding:20px;display:flex;flex-direction:column;gap:22px">
+      <aside class="demo-ops" style="min-width:0;overflow-y:auto;overflow-x:hidden;border-left:1px solid rgba(255,255,255,.07);background:#0C1222;padding:20px;display:flex;flex-direction:column;gap:22px">
         <section>
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><div style="font-size:15px;font-weight:700">Hospital gates</div><div style="font-size:11px;color:#8A94A7">most urgent first</div></div>
           <div style="display:flex;flex-direction:column;gap:10px">
             <sc-for list="{{ gates }}" as="g" hint-placeholder-count="3">
-              <div style="padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid {{ g.border }};transition:border-color .4s">
+              <div class="demo-gate" style="padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid {{ g.border }};transition:border-color .4s">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
                   <div style="min-width:0">
                     <div style="display:flex;align-items:center;gap:8px"><div style="font-size:15px;font-weight:700">{{ g.name }}</div>
@@ -214,7 +217,7 @@ button{font-family:inherit}
         </section>
 
         <sc-for list="{{ shortfalls }}" as="sf" hint-placeholder-count="0">
-          <section style="border-radius:14px;padding:16px;background:linear-gradient(180deg,rgba(240,82,74,.14),rgba(240,82,74,.04));border:1px solid rgba(240,82,74,.45);box-shadow:0 0 30px rgba(240,82,74,.12)">
+          <section class="demo-shortfall" style="border-radius:14px;padding:16px;background:linear-gradient(180deg,rgba(240,82,74,.14),rgba(240,82,74,.04));border:1px solid rgba(240,82,74,.45);box-shadow:0 0 30px rgba(240,82,74,.12)">
             <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.1em;color:#F0524A"><div style="width:7px;height:7px;border-radius:50%;background:#F0524A;animation:oo-blink 1.4s infinite"></div>SHORTFALL</div>
             <div style="font-size:19px;font-weight:800;letter-spacing:-.01em;margin-top:8px;line-height:1.25">{{ sf.gate }}: {{ sf.short }} short by {{ sf.by }}</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
@@ -223,7 +226,7 @@ button{font-family:inherit}
               </sc-for>
             </div>
             <div style="font-size:13px;color:#E3C9C6;margin-top:10px;line-height:1.45">Reason: <span style="font-weight:700;color:#fff">FOOD</span>. {{ sf.why }}</div>
-            <div style="font-size:12px;color:#B9A9A7;margin-top:6px">Alert sent to partners: “{{ sf.short }} more meals needed at {{ sf.gate }} by {{ sf.by }}”</div>
+            <div style="font-size:12px;color:#B9A9A7;margin-top:6px">Scripted partner alert: “{{ sf.short }} more meals needed at {{ sf.gate }} by {{ sf.by }}”</div>
             <sc-if value="{{ findIdle }}" hint-placeholder-val="{{ true }}">
               <button onClick="{{ startFind }}" style="margin-top:14px;width:100%;cursor:pointer;border:0;border-radius:10px;padding:12px;background:#F5A524;color:#1A1204;font-size:14px;font-weight:800" style-hover="background:#FFB840">Find {{ sf.short }} portions</button>
             </sc-if>
@@ -252,7 +255,7 @@ button{font-family:inherit}
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><div style="font-size:15px;font-weight:700">Supply · donor lots</div><div style="font-size:11px;color:#8A94A7">open a passport</div></div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <sc-for list="{{ donors }}" as="d" hint-placeholder-count="3">
-              <div onClick="{{ d.onOpen }}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;background:{{ d.bg }};border:1px solid rgba(255,255,255,.07);opacity:{{ d.opacity }};transition:background .2s,opacity .4s" style-hover="background:rgba(255,255,255,.06)">
+              <div class="demo-donor" onClick="{{ d.onOpen }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;background:{{ d.bg }};border:1px solid rgba(255,255,255,.07);opacity:{{ d.opacity }};transition:background .2s,opacity .4s" style-hover="background:rgba(255,255,255,.06)">
                 <div style="position:relative;width:40px;height:40px;flex:none">
                   <svg width="40" height="40" viewBox="0 0 40 40" style="transform:rotate(-90deg)"><circle cx="20" cy="20" r="15" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.5"></circle><circle cx="20" cy="20" r="15" fill="none" stroke="{{ d.ringColor }}" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="94.25" stroke-dashoffset="{{ d.ringOffset }}" style="transition:stroke-dashoffset .3s"></circle></svg>
                   <div style="position:absolute;inset:0;display:grid;place-items:center;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">{{ d.portions }}</div>
@@ -285,9 +288,9 @@ button{font-family:inherit}
     </div>
 
     <!-- RUNNER APP -->
-    <div style="position:absolute;inset:0;display:{{ runnerDisplay }};overflow:auto;background:radial-gradient(ellipse at 30% 40%,rgba(63,208,201,.07),transparent 60%),#0A0F1C">
-      <div style="min-height:100%;display:flex;align-items:center;justify-content:center;gap:56px;padding:28px;flex-wrap:wrap">
-        <div style="width:350px;height:720px;border-radius:48px;padding:10px;background:#1B2236;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 40px 80px rgba(0,0,0,.6);flex:none">
+    <div class="demo-runner" style="position:absolute;inset:0;display:{{ runnerDisplay }};overflow:auto;background:radial-gradient(ellipse at 30% 40%,rgba(63,208,201,.07),transparent 60%),#0A0F1C">
+      <div class="demo-runner-layout" style="min-height:100%;display:flex;align-items:center;justify-content:center;gap:56px;padding:28px;flex-wrap:wrap">
+        <div class="demo-device" style="width:350px;height:720px;border-radius:48px;padding:10px;background:#1B2236;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 40px 80px rgba(0,0,0,.6);flex:none">
           <div style="position:relative;width:100%;height:100%;border-radius:39px;overflow:hidden;background:#0B1120;display:flex;flex-direction:column">
             <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:700"><span>21:18</span><div style="width:90px;height:24px;border-radius:12px;background:#000"></div><span style="font-size:11px;color:#8A94A7">4G</span></div>
             <div style="padding:6px 20px 12px;display:flex;align-items:center;justify-content:space-between">
@@ -367,10 +370,10 @@ button{font-family:inherit}
             </div>
           </div>
         </div>
-        <div style="width:380px;max-width:100%">
-          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A94A7">RUNNER APP · LIVE SYNC</div>
-          <div style="font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-top:8px">Every tap updates the coordinator's plan.</div>
-          <div style="font-size:14px;color:#8A94A7;margin-top:10px;line-height:1.5">Runners confirm pickup and delivery from the phone. The gate QR proves the food reached the right place.</div>
+        <div class="demo-runner-story" style="width:380px;max-width:100%">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A94A7">Runner walkthrough · Scripted states</div>
+          <div style="font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-top:8px">From pickup to gate handover.</div>
+          <div style="font-size:14px;color:#8A94A7;margin-top:10px;line-height:1.5">Explore the existing pickup, arrival, QR and handover sequence. These are scripted demo interactions, separate from the working planner API.</div>
           <div style="margin-top:24px;display:flex;flex-direction:column;gap:2px">
             <sc-for list="{{ feed }}" as="f" hint-placeholder-count="2">
               <div style="display:grid;grid-template-columns:48px 14px 1fr;gap:10px;align-items:start;padding:8px 0">
@@ -385,20 +388,20 @@ button{font-family:inherit}
     </div>
 
     <!-- COMPARISON -->
-    <div style="position:absolute;inset:0;display:{{ compareDisplay }};overflow:auto">
+    <div class="demo-comparison" style="position:absolute;inset:0;display:{{ compareDisplay }};overflow:auto">
       <div style="max-width:1120px;margin:0 auto;padding:40px 28px">
         <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap">
           <div>
             <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A94A7">PLAN COMPARISON · SAME NIGHT, SAME DATA</div>
             <div style="font-size:34px;font-weight:800;letter-spacing:-.02em;margin-top:8px">After Bakery C cancels at 20:40</div>
           </div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#8A94A7;padding:6px 10px;border:1px dashed rgba(255,255,255,.2);border-radius:6px">SIMULATION · SYNTHETIC DATA</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#8A94A7;padding:6px 10px;border:1px dashed rgba(255,255,255,.2);border-radius:6px">Scripted demo · Synthetic data</div>
         </div>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:20px;align-items:center;margin-top:32px">
           <div style="padding:26px;border-radius:18px;background:linear-gradient(180deg,rgba(245,165,36,.09),rgba(245,165,36,.02));border:1px solid rgba(245,165,36,.45);box-shadow:0 0 50px rgba(245,165,36,.08)">
             <div style="font-size:13px;font-weight:700;color:#F5A524;letter-spacing:.04em">OOTAPASS</div>
             <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><div style="font-size:84px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums">{{ cmpA }}</div><div style="font-size:26px;color:#8A94A7;font-weight:700">/ 140</div></div>
-            <div style="font-size:14px;color:#C7CEDB">meals reach the gates</div>
+            <div style="font-size:14px;color:#C7CEDB">meals planned for the gates</div>
             <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px">
               <sc-for list="{{ cmpRowsA }}" as="c" hint-placeholder-count="3">
                 <div><div style="display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:600">{{ c.gate }}</span><span style="color:{{ c.color }};font-weight:700;font-variant-numeric:tabular-nums">{{ c.text }}</span></div>
@@ -414,7 +417,7 @@ button{font-family:inherit}
           <div style="padding:26px;border-radius:18px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.09)">
             <div style="font-size:13px;font-weight:700;color:#8A94A7;letter-spacing:.04em">NEAREST-FIRST</div>
             <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><div style="font-size:84px;font-weight:800;letter-spacing:-.04em;line-height:1;color:#AEB6C6;font-variant-numeric:tabular-nums">{{ cmpB }}</div><div style="font-size:26px;color:#5E687C;font-weight:700">/ 140</div></div>
-            <div style="font-size:14px;color:#8A94A7">meals reach the gates</div>
+            <div style="font-size:14px;color:#8A94A7">meals planned for the gates</div>
             <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px">
               <sc-for list="{{ cmpRowsB }}" as="c" hint-placeholder-count="3">
                 <div><div style="display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:600;color:#C7CEDB">{{ c.gate }}</span><span style="color:{{ c.color }};font-weight:700;font-variant-numeric:tabular-nums">{{ c.text }}</span></div>
@@ -489,12 +492,12 @@ class Component extends DCLogic {
       const t=s.t+0.4*s.speed;this.setState(t>=240?{t:240,playing:false}:{t});},100);
     this._prevTab=this.state.tab;this._onW=()=>this.setState({vw:window.innerWidth,vh:window.innerHeight});window.addEventListener('resize',this._onW);this._onW();this.initMap();
   }
-  componentWillUnmount(){clearInterval(this.timer);clearTimeout(this._mt);clearInterval(this._raf);clearInterval(this._craf);if(this.map)this.map.remove();}
+  componentWillUnmount(){this._mapResize?.disconnect();clearInterval(this.timer);clearTimeout(this._mt);clearInterval(this._raf);clearInterval(this._craf);if(this.map)this.map.remove();}
   initMap(){
     const go=()=>{const L=window.L;if(!L||!this.mapRef.current){this._tries=(this._tries||0)+1;if(this._tries<100)this._mt=setTimeout(go,100);return;}
       const m=L.map(this.mapRef.current,{zoomControl:false,zoomSnap:0.25,attributionControl:true});
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Tiles © Esri · © OpenStreetMap contributors'}).addTo(m);
-      this.fit=()=>{const w=this.mapRef.current.clientWidth;const c=window.innerWidth<1300||window.innerHeight<700;m.fitBounds([[12.916,77.553],[12.965,77.602]],{paddingTopLeft:[c?30:330,c?120:30],paddingBottomRight:[30,105]});};this.fit();window.addEventListener('resize',()=>{m.invalidateSize();this.fit();});
+      this.fit=()=>{if(!this.mapRef.current.clientWidth||!this.mapRef.current.clientHeight)return;m.fitBounds([[12.916,77.553],[12.965,77.602]],{padding:[32,32]});};this.fit();this._mapResize=new ResizeObserver(()=>{m.invalidateSize();this.fit();});this._mapResize.observe(this.mapRef.current);
       m.getPane('tilePane').style.filter='brightness(.85) sepia(.25) hue-rotate(185deg) saturate(1.4)';
       const at=m.attributionControl.getContainer();Object.assign(at.style,{background:'rgba(10,15,28,.7)',color:'#5E687C',fontSize:'10px'});
       at.querySelectorAll('a').forEach(a=>a.style.color='#8A94A7');
@@ -508,7 +511,7 @@ class Component extends DCLogic {
     if(this._sig&&sig!==this._sig){
       const had=this._sig.split(',');const now=sig.split(',');
       let toast=null;
-      if(had.includes('T3')&&!now.includes('T3'))toast={title:'Bakery C cancelled at '+fmt(s.cancelAt)+' · night re-planned',body:'NIMHANS is now 20 short. Alert sent: “20 more meals needed at NIMHANS by 22:30”.',color:RED};
+      if(had.includes('T3')&&!now.includes('T3'))toast={title:'Bakery C cancelled at '+fmt(s.cancelAt)+' · night re-planned',body:'NIMHANS is now 20 short. Generated demo alert: “20 more meals needed at NIMHANS by 22:30”.',color:RED};
       else if(now.includes('T6')&&!had.includes('T6'))toast={title:'Shortfall closed · 140 of 140 planned',body:'Supermarket D → NIMHANS via Runner 3, arriving '+fmt(plan.trips.find(x=>x.id==='T6').drop)+'.',color:TEAL};
       else if(now.includes('T3'))toast={title:'Rewound before the cancellation',body:'Original plan restored: 140 of 140.',color:AMBER};
       if(toast)this.showToast(toast);
@@ -517,7 +520,7 @@ class Component extends DCLogic {
     this._sig=sig;
     const target=plan.trips.reduce((a,x)=>a+x.n,0);
     if(target!==this._target){const from=this._target==null?target:s.shown;this._target=target;this.tween(from,target);}
-    if(ps.tab!==s.tab&&s.tab==='board'&&this.map)setTimeout(()=>this.map.invalidateSize(),50);
+    if(ps.tab!==s.tab&&s.tab==='board'&&this.map)setTimeout(()=>{this.map.invalidateSize();this.fit();},50);
     if(ps.tab!==s.tab&&s.tab==='compare')this.tweenCmp();
     }catch(e){console.warn('didUpdate',e);}
     try{this.syncMap();}catch(e){console.warn('syncMap',e);}
@@ -538,14 +541,14 @@ class Component extends DCLogic {
     else if(kind==='idle')dot=`<div style="position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55)"></div>`;
     else dot=`<div style="position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 14px #fff,0 0 30px rgba(255,255,255,.5)"></div>`;
     const showLabels=(this.props||{}).showLabels!==false;
-    const lab=kind==='idle'?'':(showLabels||kind==='runner')?`<div style="position:absolute;${above?'left:-50px;width:100px;text-align:center;bottom:12px':(left?'right:15px;text-align:right':'left:'+(below?-20:kind==='runner'?10:15)+'px')+';top:'+(below?14:kind==='runner'?-8:-11)+'px'};white-space:nowrap;font:${kind==='runner'?'700 10px':'700 12px'} 'Schibsted Grotesk',sans-serif;color:#E8ECF3;text-shadow:0 1px 6px #000,0 0 2px #000">${label}${sub?`<div style="font-weight:600;font-size:10px;color:${color};margin-top:1px">${sub}</div>`:''}</div>`:'';
+    const lab=kind==='idle'?'':(showLabels||kind==='runner')?`<div class="demo-map-label" style="position:absolute;${above?'left:-50px;width:100px;text-align:center;bottom:12px':(left?'right:15px;text-align:right':'left:'+(below?-60:kind==='runner'?10:15)+'px')+';top:'+(below?14:kind==='runner'?-8:-11)+'px'};white-space:nowrap;font:${kind==='runner'?'700 10px':'700 12px'} 'Schibsted Grotesk',sans-serif;color:#E8ECF3;text-shadow:0 1px 6px #000,0 0 2px #000">${label}${sub?`<div style="font-weight:600;font-size:10px;color:${color};margin-top:1px">${sub}</div>`:''}</div>`:'';
     return window.L.divIcon({className:'',iconSize:[0,0],html:`<div style="position:relative;width:0;height:0;cursor:pointer">${halo}${dot}${lab}</div>`});
   }
   syncMap(plan){
     const L=window.L,m=this.map;if(!m)return;const s=this.state;plan=plan||buildPlan(s.t,s.cancelAt,s.rescueAt);
     const want={};
     Object.entries(GATES).forEach(([k,g])=>{const gp=plan.g[k];const short=gp.planned<g.need;const col=short?RED:TEAL;
-      want['g-'+k]={loc:g.loc,key:k+gp.planned+gp.delivered+short,mk:()=>this.icon('gate',col,k,gp.delivered+' delivered · '+gp.planned+'/'+g.need+' planned',short||gp.delivered<gp.planned,k==='Kidwai'?'below':'right'),z:200};});
+      want['g-'+k]={loc:g.loc,key:k+gp.planned+gp.delivered+short,mk:()=>this.icon('gate',col,k,gp.delivered+' delivered · '+gp.planned+'/'+g.need+' planned',short||gp.delivered<gp.planned,k==='Kidwai'?'below':k==='NIMHANS'?'left':'right'),z:200};});
     Object.entries(DONORS).forEach(([id,d])=>{if(id==='sup-d'&&!plan.rescued&&s.find!=='found')return;
       const cancelled=id==='bake-c'&&plan.cancelled;const col=cancelled?'#5E687C':AMBER;
       want['d-'+id]={loc:d.loc,key:id+cancelled+s.find,mk:()=>this.icon('donor',col,d.name,cancelled?'<span style="color:#F0524A">Cancelled '+fmt(s.cancelAt)+'</span>':d.portions+' · '+d.item,!cancelled,id==='sup-d'?'right':id==='hall-a'?'above':'left'),z:100,click:()=>this.setState({passport:id})};});
@@ -577,7 +580,7 @@ class Component extends DCLogic {
   renderVals(){
     const s=this.state;const t=s.t;const plan=buildPlan(t,s.cancelAt,s.rescueAt);
     const total=plan.trips.reduce((a,x)=>a+x.n,0);const delivered=plan.trips.filter(x=>x.status==='delivered').reduce((a,x)=>a+x.n,0);
-    const tab=k=>({label:{board:'Night board',runner:'Runner app',compare:'Plan comparison'}[k],bg:s.tab===k?'rgba(245,165,36,.16)':'transparent',color:s.tab===k?AMBER:'#AEB6C6',onClick:()=>this.setState({tab:k})});
+    const tab=k=>({selected:s.tab===k,label:{board:'Night board',runner:'Runner app',compare:'Plan comparison'}[k],bg:s.tab===k?'rgba(245,165,36,.16)':'transparent',color:s.tab===k?AMBER:'#AEB6C6',onClick:()=>this.setState({tab:k})});
     const gates=Object.entries(GATES).sort((a,b)=>a[1].by-b[1].by).map(([k,g])=>{const gp=plan.g[k];const short=gp.planned<g.need;const met=gp.delivered>=g.need;
       const vegN=plan.trips.filter(x=>x.gate===k&&DONORS[x.donor].veg).reduce((a,x)=>a+x.n,0);
       return {name:k,full:g.full,by:fmt(g.by),vegOnly:g.veg,need:g.need,planned:gp.planned,plannedW:(gp.planned/g.need*100)+'%',deliveredW:(gp.delivered/g.need*100)+'%',shortOp:short?1:0,
@@ -619,7 +622,7 @@ class Component extends DCLogic {
     return {
       tabs:['board','runner','compare'].map(tab),wideDisplay:(s.vw||1400)>=1200?'block':'none',...(()=>{const c=(s.vw||1400)<1300||(s.vh||900)<700;return {cardW:c?'auto':'300px',cardPad:c?'10px 14px':'18px 20px',fullBlock:c?'none':'block',fullFlex:c?'none':'flex',numMt:c?'0':'6px',numSize:c?'40px':'76px',subSize:c?'12px':'15px'};})(),wideFlex:(s.vw||1400)>=1050?'flex':'none',boardDisplay:s.tab==='board'?'grid':'none',runnerDisplay:s.tab==='runner'?'block':'none',compareDisplay:s.tab==='compare'?'block':'none',
       reset:()=>{this.setState({t:14,playing:true,cancelAt:(this.props||{}).autoCancel===false?null:40,rescueAt:null,find:'idle',passport:null,checks:{}});},
-      clock:fmt(t),playLabel:s.playing?'❚❚':'▶',togglePlay:()=>this.setState(st=>({playing:!st.playing,t:st.t>=240?0:st.t})),
+      replayMinute:Math.round(t),scrubKey:e=>{const step=e.shiftKey?15:5;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();this.setState({t:Math.max(0,Math.min(240,t+(e.key==='ArrowRight'?step:-step)))});}},clock:fmt(t),playLabel:s.playing?'❚❚':'▶',togglePlay:()=>this.setState(st=>({playing:!st.playing,t:st.t>=240?0:st.t})),
       speeds:[1,2,4].map(v=>({label:v+'×',bg:s.speed===v?'rgba(245,165,36,.2)':'transparent',color:s.speed===v?AMBER:MUTED,onClick:()=>this.setState({speed:v})})),
       progressPct:(t/240*100)+'%',marks,trackRef:this.trackRef,mapRef:this.mapRef,qrRef:this.qrRef,
       scrubDown:e=>{this.dragging=true;e.currentTarget.setPointerCapture(e.pointerId);this.scrubAt(e);},scrubMove:e=>{if(this.dragging)this.scrubAt(e);},scrubUp:()=>{this.dragging=false;},
@@ -628,7 +631,7 @@ class Component extends DCLogic {
       toastY:toast.on?'0':'-140%',toastOp:toast.on?1:0,toastColor:toast.color||AMBER,toastTitle:toast.title||'',toastBody:toast.body||'',
       replanOp:s.replanning?1:0,
       spinner:React.createElement('div',{style:{width:14,height:14,borderRadius:'50%',border:'2px solid rgba(245,165,36,.25)',borderTopColor:AMBER,animation:'oo-spin .7s linear infinite',flex:'none'}}),
-      drawerX:s.passport?'0':'105%',closePassport:()=>this.setState({passport:null}),pp,
+      passportClosed:!s.passport,passportTabIndex:s.passport?0:-1,drawerX:s.passport?'0':'105%',closePassport:()=>this.setState({passport:null}),pp,
       gates,shortfalls,donors,runners,
       findIdle:s.find==='idle'&&canRescue,findSearching:s.find==='searching',findFound:s.find==='found'&&canRescue,findLate:!canRescue,
       searchText:searchMsgs[Math.min(4,s.searchI||0)],startFind:this.startFind,rescueEta:s.cancelAt!=null?fmt(rescueTiming(t,s.cancelAt).drop):'',
