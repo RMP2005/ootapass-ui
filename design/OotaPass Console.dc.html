@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>OotaPass · Night console</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Schibsted Grotesk';src:url(static/fonts/schibsted-grotesk-latin-400-normal.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'Schibsted Grotesk';src:url(static/fonts/schibsted-grotesk-latin-500-normal.woff2) format('woff2');font-weight:500}
+@font-face{font-family:'Schibsted Grotesk';src:url(static/fonts/schibsted-grotesk-latin-600-normal.woff2) format('woff2');font-weight:600}
+@font-face{font-family:'Schibsted Grotesk';src:url(static/fonts/schibsted-grotesk-latin-700-normal.woff2) format('woff2');font-weight:700}
+@font-face{font-family:'Schibsted Grotesk';src:url(static/fonts/schibsted-grotesk-latin-800-normal.woff2) format('woff2');font-weight:800}
+@keyframes oo-pulse{0%{transform:scale(.7);opacity:.7}100%{transform:scale(2.2);opacity:0}}
+@keyframes oo-flow{to{stroke-dashoffset:-38}}
+@keyframes oo-spin{to{transform:rotate(360deg)}}
+@keyframes oo-scan{0%{top:6%}50%{top:90%}100%{top:6%}}
+@keyframes oo-blink{50%{opacity:.25}}
+html,body{margin:0;background:#0A0F1C;color:#E8ECF3;font-family:'Schibsted Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#F5A524}a:hover{color:#FFC35C}
+button{font-family:inherit}
+.leaflet-container{background:#0A0F1C;font-family:'Schibsted Grotesk',system-ui,sans-serif}
+</style>
+</helmet>
+<div style="height:100vh;min-height:420px;display:flex;flex-direction:column;background:#0A0F1C;overflow:hidden">
+  <header style="height:60px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;min-width:0;border-bottom:1px solid rgba(255,255,255,.07);background:#0C1222;position:relative;z-index:20">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:26px;height:26px;border-radius:50%;border:2px solid #F5A524;display:grid;place-items:center;box-shadow:0 0 14px rgba(245,165,36,.45)"><div style="width:8px;height:8px;border-radius:50%;background:#F5A524"></div></div>
+      <div style="font-weight:800;font-size:19px;letter-spacing:-.02em">OotaPass</div>
+      <div style="font-family:'Noto Sans Kannada',sans-serif;font-weight:800;font-size:15px;color:#F5A524;padding:1px 8px;border:1px solid rgba(245,165,36,.35);border-radius:6px">ಊಟ</div>
+    </div>
+    <div style="display:{{ wideDisplay }};font-size:13px;color:#8A94A7;padding-left:16px;border-left:1px solid rgba(255,255,255,.08);white-space:nowrap">Night of 16 Nov · South Bengaluru</div>
+    <nav style="margin:0 auto;display:flex;min-width:0;flex-shrink:1;overflow:hidden;gap:4px;padding:4px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px">
+      <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="3">
+        <button onClick="{{ tb.onClick }}" style="border:0;cursor:pointer;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap;background:{{ tb.bg }};color:{{ tb.color }};transition:background .2s,color .2s">{{ tb.label }}</button>
+      </sc-for>
+    </nav>
+    <div style="display:{{ wideFlex }};align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.08em;color:#8A94A7;white-space:nowrap;padding:5px 10px;border:1px dashed rgba(255,255,255,.15);border-radius:6px">SIMULATION · SYNTHETIC DATA</div>
+    <button onClick="{{ reset }}" style="cursor:pointer;background:transparent;color:#E8ECF3;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;white-space:nowrap" style-hover="background:rgba(255,255,255,.06)">Reset demo</button>
+  </header>
+
+  <main style="flex:1;min-height:0;position:relative">
+    <!-- NIGHT BOARD -->
+    <div style="position:absolute;inset:0;display:{{ boardDisplay }};grid-template-columns:minmax(0,1fr) 410px">
+      <div style="position:relative;min-width:0;overflow:hidden">
+        <div ref="{{ mapRef }}" style="position:absolute;inset:0;background:#0A0F1C"></div>
+        <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(6,9,18,.75) 100%);z-index:400"></div>
+
+        <div style="position:absolute;top:16px;left:16px;z-index:500;width:{{ cardW }};padding:{{ cardPad }};border-radius:14px;background:rgba(12,18,34,.78);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08)">
+          <div style="display:{{ fullBlock }};font-size:11px;font-weight:600;letter-spacing:.1em;color:#8A94A7">TONIGHT · 3 GATES · 3 RUNNERS</div>
+          <div style="display:flex;align-items:baseline;gap:6px;margin-top:{{ numMt }}">
+            <div style="font-size:{{ numSize }};line-height:.95;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:{{ headColor }};transition:color .4s">{{ shown }}</div>
+            <div style="font-size:26px;font-weight:700;color:#8A94A7">/ 140</div>
+          </div>
+          <div style="font-size:{{ subSize }};font-weight:500;margin-top:4px">meals reach the gates tonight</div>
+          <div style="display:{{ fullBlock }};margin-top:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><div style="height:100%;width:{{ deliveredPct }};background:#3FD0C9;transition:width .3s"></div></div>
+          <div style="display:{{ fullFlex }};justify-content:space-between;margin-top:7px;font-size:12px;color:#8A94A7"><span>{{ deliveredText }}</span><span style="color:{{ shortColor }};font-weight:600">{{ shortText }}</span></div>
+        </div>
+
+        <div style="position:absolute;left:20px;bottom:118px;z-index:500;display:{{ fullFlex }};gap:16px;font-size:11px;color:#8A94A7;padding:8px 12px;border-radius:8px;background:rgba(12,18,34,.7);backdrop-filter:blur(6px)">
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#F5A524;box-shadow:0 0 8px #F5A524"></div>Donor lot</div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;border:2px solid #3FD0C9"></div>Hospital gate</div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff"></div>Runner</div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:18px;border-top:2px dashed rgba(245,165,36,.7)"></div>Planned</div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:18px;border-top:2px solid #F5A524"></div>Carrying</div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:18px;border-top:2px solid rgba(63,208,201,.5)"></div>Delivered</div>
+        </div>
+
+        <div style="position:absolute;top:18px;left:50%;z-index:700;transform:translate(-50%,{{ toastY }});opacity:{{ toastOp }};transition:transform .45s cubic-bezier(.2,.9,.3,1.2),opacity .3s;pointer-events:none;min-width:380px;max-width:520px;padding:12px 16px;border-radius:12px;background:#121A2E;border:1px solid {{ toastColor }};box-shadow:0 12px 40px rgba(0,0,0,.5)">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:{{ toastColor }}"><div style="width:7px;height:7px;border-radius:50%;background:{{ toastColor }}"></div>{{ toastTitle }}</div>
+          <div style="font-size:13px;color:#C7CEDB;margin-top:3px">{{ toastBody }}</div>
+        </div>
+
+        <div style="position:absolute;inset:0;z-index:600;display:grid;place-items:center;pointer-events:none;background:rgba(10,15,28,.35);opacity:{{ replanOp }};transition:opacity .35s">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-radius:999px;background:#121A2E;border:1px solid rgba(245,165,36,.4);font-weight:600;font-size:14px">{{ spinner }}Re-planning the night from {{ clock }}…</div>
+        </div>
+
+        <div style="position:absolute;left:20px;right:20px;bottom:20px;z-index:550;padding:12px 16px 10px;border-radius:14px;background:rgba(12,18,34,.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:16px">
+          <button onClick="{{ togglePlay }}" style="flex:none;width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;background:#F5A524;color:#1A1204;font-weight:800;font-size:13px;box-shadow:0 0 20px rgba(245,165,36,.35)">{{ playLabel }}</button>
+          <div style="flex:none;width:86px">
+            <div style="font-size:28px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1">{{ clock }}</div>
+            <div style="display:flex;gap:2px;margin-top:5px">
+              <sc-for list="{{ speeds }}" as="sp" hint-placeholder-count="3">
+                <button onClick="{{ sp.onClick }}" style="border:0;cursor:pointer;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:{{ sp.bg }};color:{{ sp.color }}">{{ sp.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div ref="{{ trackRef }}" onPointerDown="{{ scrubDown }}" onPointerMove="{{ scrubMove }}" onPointerUp="{{ scrubUp }}" style="position:relative;height:30px;cursor:pointer;touch-action:none">
+              <div style="position:absolute;left:0;right:0;top:14px;height:3px;border-radius:2px;background:rgba(255,255,255,.1)"></div>
+              <div style="position:absolute;left:0;top:14px;height:3px;border-radius:2px;width:{{ progressPct }};background:linear-gradient(90deg,rgba(245,165,36,.3),#F5A524)"></div>
+              <sc-for list="{{ marks }}" as="mk" hint-placeholder-count="4">
+                <div style="position:absolute;left:{{ mk.left }};top:2px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none">
+                  <div style="font-size:9px;font-weight:700;letter-spacing:.04em;color:{{ mk.color }};white-space:nowrap">{{ mk.label }}</div>
+                  <div style="width:2px;height:12px;margin-top:2px;background:{{ mk.color }};border-radius:1px"></div>
+                </div>
+              </sc-for>
+              <div style="position:absolute;left:{{ progressPct }};top:8px;width:15px;height:15px;margin-left:-7px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(245,165,36,.35),0 0 16px rgba(245,165,36,.8)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:#5E687C;font-variant-numeric:tabular-nums;margin-top:2px"><span>20:00</span><span>21:00</span><span>22:00</span><span>23:00</span><span>00:00</span></div>
+          </div>
+        </div>
+
+        <div style="position:absolute;top:0;right:0;bottom:0;width:380px;z-index:800;transform:translateX({{ drawerX }});transition:transform .5s cubic-bezier(.2,.8,.2,1);background:#0E1528;border-left:1px solid rgba(255,255,255,.08);box-shadow:-20px 0 50px rgba(0,0,0,.45);overflow-y:auto">
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.1em;color:#F5A524">FOOD PASSPORT</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#8A94A7;margin-top:2px">{{ pp.batch }}</div>
+              </div>
+              <button onClick="{{ closePassport }}" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#E8ECF3;cursor:pointer;font-size:16px">×</button>
+            </div>
+            <sc-if value="{{ pp.cancelled }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:10px 12px;border-radius:10px;background:rgba(240,82,74,.12);border:1px solid rgba(240,82,74,.4);font-size:13px;color:#FFB4AE">Cancelled by donor at {{ pp.cancelTime }}. Its trips were removed and the night re-planned.</div>
+            </sc-if>
+            <div style="background:#F6F3EC;color:#14161C;border-radius:12px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+              <div style="min-width:0">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:14px;height:14px;border:1.5px solid {{ pp.vegColor }};display:grid;place-items:center;flex:none"><div style="width:7px;height:7px;border-radius:50%;background:{{ pp.vegColor }}"></div></div>
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:{{ pp.vegColor }}">{{ pp.vegLabel }}</div>
+                </div>
+                <div style="font-size:21px;font-weight:800;letter-spacing:-.02em;margin-top:6px;line-height:1.1">{{ pp.item }}</div>
+                <div style="font-size:12px;color:#4A4F5C;margin-top:3px">{{ pp.donor }} · {{ pp.area }}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:12px;font-size:11px">
+                  <div><div style="color:#6B7080">PORTIONS</div><div style="font-weight:700;font-size:14px">{{ pp.portions }}</div></div>
+                  <div><div style="color:#6B7080">READY</div><div style="font-weight:700;font-size:14px">{{ pp.ready }}</div></div>
+                  <div><div style="color:#6B7080">USE BY</div><div style="font-weight:700;font-size:14px">{{ pp.useBy }}</div></div>
+                  <div><div style="color:#6B7080">STORAGE</div><div style="font-weight:700;font-size:12px">{{ pp.storage }}</div></div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                <div ref="{{ qrRef }}" style="width:104px;height:104px"></div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6B7080">SCAN AT GATE</div>
+              </div>
+              <div style="grid-column:1 / -1;border-top:1px dashed #C9C4B8;padding-top:8px;font-size:10px;color:#6B7080">Use-by declared by donor. OotaPass never extends it. FSSAI surplus-food rules, 2019.</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)">
+              <div style="position:relative;width:92px;height:92px;flex:none">
+                <svg width="92" height="92" viewBox="0 0 92 92" style="transform:rotate(-90deg)"><circle cx="46" cy="46" r="40" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="6"></circle><circle cx="46" cy="46" r="40" fill="none" stroke="{{ pp.ringColor }}" stroke-width="6" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="{{ pp.ringOffset }}" style="transition:stroke-dashoffset .3s"></circle></svg>
+                <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center"><div><div style="font-size:18px;font-weight:800;font-variant-numeric:tabular-nums">{{ pp.left }}</div><div style="font-size:9px;color:#8A94A7;letter-spacing:.08em">LEFT</div></div></div>
+              </div>
+              <div style="font-size:13px;color:#C7CEDB;line-height:1.45">Safe-to-serve window closes at <span style="color:#E8ECF3;font-weight:700">{{ pp.useBy }}</span>. Every trip for this batch must reach its gate before then.</div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.1em;color:#8A94A7;margin-bottom:8px">HANDOVER</div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ pp.trips }}" as="tr" hint-placeholder-count="1">
+                  <div style="padding:12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)">
+                    <div style="font-size:13px;font-weight:600">{{ tr.title }}</div>
+                    <div style="display:flex;align-items:center;gap:6px;margin-top:10px">
+                      <sc-for list="{{ tr.steps }}" as="st" hint-placeholder-count="3">
+                        <div style="flex:1;padding:6px 8px;border-radius:7px;background:{{ st.bg }};border:1px solid {{ st.border }};transition:all .3s">
+                          <div style="font-size:11px;font-weight:700;color:{{ st.color }}">{{ st.label }}</div>
+                          <div style="font-size:10px;color:#8A94A7;font-variant-numeric:tabular-nums">{{ st.time }}</div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ pp.noTrips }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#8A94A7">No trips planned for this batch.</div></sc-if>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.1em;color:#8A94A7;margin-bottom:8px">NGO CHECK AT PICKUP</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <sc-for list="{{ pp.checks }}" as="ck" hint-placeholder-count="3">
+                  <button onClick="{{ ck.onClick }}" style="display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;padding:9px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);color:#E8ECF3;font-size:13px">
+                    <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ ck.color }};background:{{ ck.fill }};display:grid;place-items:center;color:#0A0F1C;font-size:11px;font-weight:800;transition:all .2s">{{ ck.mark }}</div>{{ ck.label }}
+                  </button>
+                </sc-for>
+              </div>
+              <div style="margin-top:8px;font-size:12px;color:{{ pp.checkColor }};font-weight:600">{{ pp.checkText }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside style="min-width:0;overflow-y:auto;overflow-x:hidden;border-left:1px solid rgba(255,255,255,.07);background:#0C1222;padding:20px;display:flex;flex-direction:column;gap:22px">
+        <section>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><div style="font-size:15px;font-weight:700">Hospital gates</div><div style="font-size:11px;color:#8A94A7">most urgent first</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ gates }}" as="g" hint-placeholder-count="3">
+              <div style="padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid {{ g.border }};transition:border-color .4s">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                  <div style="min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px"><div style="font-size:15px;font-weight:700">{{ g.name }}</div>
+                      <sc-if value="{{ g.vegOnly }}" hint-placeholder-val="{{ false }}"><div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#7BD88F;border:1px solid rgba(123,216,143,.4);border-radius:4px;padding:1px 5px">VEG ONLY</div></sc-if>
+                    </div>
+                    <div style="font-size:12px;color:#8A94A7;margin-top:2px">{{ g.full }} · by {{ g.by }}</div>
+                  </div>
+                  <div style="text-align:right;flex:none">
+                    <div style="font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:{{ g.numColor }};line-height:1">{{ g.planned }}<span style="font-size:14px;color:#8A94A7;font-weight:600">/{{ g.need }}</span></div>
+                    <div style="font-size:11px;font-weight:600;color:{{ g.statusColor }};margin-top:3px">{{ g.status }}</div>
+                  </div>
+                </div>
+                <div style="position:relative;height:8px;border-radius:4px;background:rgba(255,255,255,.06);margin-top:12px;overflow:hidden">
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:{{ g.plannedW }};background:rgba(245,165,36,.32);transition:width .8s cubic-bezier(.2,.8,.2,1)"></div>
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:{{ g.deliveredW }};background:#F5A524;box-shadow:0 0 10px rgba(245,165,36,.6);transition:width .4s"></div>
+                  <div style="position:absolute;top:0;bottom:0;left:{{ g.plannedW }};right:0;opacity:{{ g.shortOp }};background:repeating-linear-gradient(135deg,rgba(240,82,74,.75) 0 4px,rgba(240,82,74,.25) 4px 8px);transition:left .8s cubic-bezier(.2,.8,.2,1),opacity .4s"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#8A94A7;margin-top:6px"><span>{{ g.deliveredText }}</span><span>{{ g.mix }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <sc-for list="{{ shortfalls }}" as="sf" hint-placeholder-count="0">
+          <section style="border-radius:14px;padding:16px;background:linear-gradient(180deg,rgba(240,82,74,.14),rgba(240,82,74,.04));border:1px solid rgba(240,82,74,.45);box-shadow:0 0 30px rgba(240,82,74,.12)">
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.1em;color:#F0524A"><div style="width:7px;height:7px;border-radius:50%;background:#F0524A;animation:oo-blink 1.4s infinite"></div>SHORTFALL</div>
+            <div style="font-size:19px;font-weight:800;letter-spacing:-.01em;margin-top:8px;line-height:1.25">{{ sf.gate }}: {{ sf.short }} short by {{ sf.by }}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+              <sc-for list="{{ sf.tags }}" as="tg" hint-placeholder-count="4">
+                <div style="font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 8px;border-radius:5px;background:{{ tg.bg }};color:{{ tg.color }};border:1px solid {{ tg.border }}">{{ tg.label }}</div>
+              </sc-for>
+            </div>
+            <div style="font-size:13px;color:#E3C9C6;margin-top:10px;line-height:1.45">Reason: <span style="font-weight:700;color:#fff">FOOD</span>. {{ sf.why }}</div>
+            <div style="font-size:12px;color:#B9A9A7;margin-top:6px">Alert sent to partners: “{{ sf.short }} more meals needed at {{ sf.gate }} by {{ sf.by }}”</div>
+            <sc-if value="{{ findIdle }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ startFind }}" style="margin-top:14px;width:100%;cursor:pointer;border:0;border-radius:10px;padding:12px;background:#F5A524;color:#1A1204;font-size:14px;font-weight:800" style-hover="background:#FFB840">Find {{ sf.short }} portions</button>
+            </sc-if>
+            <sc-if value="{{ findSearching }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:14px;display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:rgba(255,255,255,.04);font-size:13px;color:#C7CEDB">{{ spinner }}{{ searchText }}</div>
+            </sc-if>
+            <sc-if value="{{ findFound }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:14px;padding:12px;border-radius:10px;background:#121A2E;border:1px solid rgba(245,165,36,.45)">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#F5A524">MATCH FOUND · 1.2 KM FROM NIMHANS</div>
+                <div style="font-size:14px;font-weight:700;margin-top:5px">Supermarket D · Jayanagar 9th Block</div>
+                <div style="font-size:12px;color:#8A94A7;margin-top:2px">24 veg portions · curd rice · use by 23:50 · Runner 3 free</div>
+                <div style="font-size:12px;color:#C7CEDB;margin-top:6px">Arrives at the gate by <b>{{ rescueEta }}</b>, inside the 22:30 deadline.</div>
+                <div style="display:flex;gap:8px;margin-top:10px">
+                  <button onClick="{{ acceptRescue }}" style="flex:1;cursor:pointer;border:0;border-radius:8px;padding:10px;background:#F5A524;color:#1A1204;font-weight:800;font-size:13px">Accept and re-plan</button>
+                  <button onClick="{{ dismissFind }}" style="cursor:pointer;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px 12px;background:transparent;color:#E8ECF3;font-weight:600;font-size:13px">Not now</button>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ findLate }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px;font-size:12px;color:#FFB4AE">Too late for a new pickup to reach the gate by {{ sf.by }}.</div>
+            </sc-if>
+          </section>
+        </sc-for>
+
+        <section>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><div style="font-size:15px;font-weight:700">Supply · donor lots</div><div style="font-size:11px;color:#8A94A7">open a passport</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ donors }}" as="d" hint-placeholder-count="3">
+              <div onClick="{{ d.onOpen }}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;background:{{ d.bg }};border:1px solid rgba(255,255,255,.07);opacity:{{ d.opacity }};transition:background .2s,opacity .4s" style-hover="background:rgba(255,255,255,.06)">
+                <div style="position:relative;width:40px;height:40px;flex:none">
+                  <svg width="40" height="40" viewBox="0 0 40 40" style="transform:rotate(-90deg)"><circle cx="20" cy="20" r="15" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3.5"></circle><circle cx="20" cy="20" r="15" fill="none" stroke="{{ d.ringColor }}" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="94.25" stroke-dashoffset="{{ d.ringOffset }}" style="transition:stroke-dashoffset .3s"></circle></svg>
+                  <div style="position:absolute;inset:0;display:grid;place-items:center;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">{{ d.portions }}</div>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:{{ d.vegColor }};flex:none"></div><div style="font-size:14px;font-weight:700;text-decoration:{{ d.deco }}">{{ d.name }}</div></div>
+                  <div style="font-size:12px;color:#8A94A7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.item }} · {{ d.area }}</div>
+                  <div style="font-size:11px;color:{{ d.statusColor }};margin-top:2px;font-weight:600">{{ d.status }}</div>
+                </div>
+                <sc-if value="{{ d.canCancel }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ d.onCancel }}" style="flex:none;cursor:pointer;font-size:11px;font-weight:600;padding:6px 8px;border-radius:6px;border:1px solid rgba(240,82,74,.4);background:transparent;color:#F0524A" style-hover="background:rgba(240,82,74,.12)">Cancel</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section>
+          <div style="font-size:15px;font-weight:700;margin-bottom:12px">Runners</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ runners }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                <div style="width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;background:{{ r.bg }};color:{{ r.fg }};box-shadow:{{ r.glow }}">{{ r.code }}</div>
+                <div style="flex:1;color:#C7CEDB">{{ r.activity }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- RUNNER APP -->
+    <div style="position:absolute;inset:0;display:{{ runnerDisplay }};overflow:auto;background:radial-gradient(ellipse at 30% 40%,rgba(63,208,201,.07),transparent 60%),#0A0F1C">
+      <div style="min-height:100%;display:flex;align-items:center;justify-content:center;gap:56px;padding:28px;flex-wrap:wrap">
+        <div style="width:350px;height:720px;border-radius:48px;padding:10px;background:#1B2236;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 40px 80px rgba(0,0,0,.6);flex:none">
+          <div style="position:relative;width:100%;height:100%;border-radius:39px;overflow:hidden;background:#0B1120;display:flex;flex-direction:column">
+            <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:700"><span>21:18</span><div style="width:90px;height:24px;border-radius:12px;background:#000"></div><span style="font-size:11px;color:#8A94A7">4G</span></div>
+            <div style="padding:6px 20px 12px;display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;color:#8A94A7">Runner 2 · shift till 00:00</div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em">Hi, Manjunath</div></div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#3FD0C9;padding:4px 8px;border-radius:999px;background:rgba(63,208,201,.12)"><div style="width:6px;height:6px;border-radius:50%;background:#3FD0C9;animation:oo-blink 1.6s infinite"></div>ON SHIFT</div>
+            </div>
+            <div style="padding:0 20px;display:flex;gap:6px">
+              <sc-for list="{{ rSteps }}" as="rs" hint-placeholder-count="4">
+                <div style="flex:1;height:4px;border-radius:2px;background:{{ rs.bg }};transition:background .4s"></div>
+              </sc-for>
+            </div>
+            <div style="flex:1;min-height:0;padding:16px 20px 22px;display:flex;flex-direction:column;gap:14px">
+              <sc-if value="{{ rS0 }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#F5A524">NEXT PICKUP · TRIP T5</div>
+                <div style="padding:16px;border-radius:16px;background:#141C30;border:1px solid rgba(255,255,255,.08)">
+                  <div style="font-size:20px;font-weight:800">Restaurant B</div>
+                  <div style="font-size:13px;color:#8A94A7">11th Main, Jayanagar 4th Block</div>
+                  <div style="display:flex;gap:8px;margin-top:12px">
+                    <div style="padding:6px 10px;border-radius:8px;background:rgba(245,165,36,.12);color:#F5A524;font-weight:700;font-size:13px">20 portions</div>
+                    <div style="padding:6px 10px;border-radius:8px;background:rgba(201,124,84,.15);color:#E8A27E;font-weight:700;font-size:13px">Non-veg</div>
+                  </div>
+                  <div style="font-size:13px;margin-top:10px;color:#C7CEDB">Chicken rice · use by <b>23:40</b></div>
+                </div>
+                <div style="padding:14px 16px;border-radius:16px;background:#141C30;border:1px solid rgba(255,255,255,.08);display:flex;gap:12px">
+                  <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px"><div style="width:10px;height:10px;border-radius:50%;background:#F5A524"></div><div style="width:2px;flex:1;background:repeating-linear-gradient(180deg,#5E687C 0 4px,transparent 4px 8px);margin:4px 0"></div><div style="width:10px;height:10px;border-radius:50%;border:2px solid #3FD0C9"></div></div>
+                  <div style="display:flex;flex-direction:column;gap:16px;font-size:13px">
+                    <div><div style="font-weight:700">Pick up at 21:18</div><div style="color:#8A94A7">Restaurant B</div></div>
+                    <div><div style="font-weight:700">Hand over by 21:34</div><div style="color:#8A94A7">NIMHANS gate · 2.6 km · 8 min</div></div>
+                  </div>
+                </div>
+                <div style="flex:1"></div>
+                <button onClick="{{ rPicked }}" style="height:56px;border:0;border-radius:16px;cursor:pointer;background:#F5A524;color:#1A1204;font-size:17px;font-weight:800;box-shadow:0 8px 30px rgba(245,165,36,.35)">Picked up</button>
+              </sc-if>
+              <sc-if value="{{ rS1 }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#F5A524">CARRYING 20 MEALS</div>
+                <div style="font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15">To NIMHANS gate</div>
+                <div style="padding:16px;border-radius:16px;background:#141C30;border:1px solid rgba(255,255,255,.08)">
+                  <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#8A94A7">ETA</span><span style="font-weight:700;font-variant-numeric:tabular-nums">{{ rEta }}</span></div>
+                  <div style="height:6px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:10px;overflow:hidden"><div style="height:100%;width:{{ rProgW }};background:#F5A524;box-shadow:0 0 10px #F5A524"></div></div>
+                  <div style="display:flex;justify-content:space-between;font-size:11px;color:#8A94A7;margin-top:6px"><span>Restaurant B</span><span>NIMHANS</span></div>
+                </div>
+                <div style="padding:14px 16px;border-radius:16px;background:rgba(63,208,201,.08);border:1px solid rgba(63,208,201,.25);font-size:13px;color:#BFEDEA;line-height:1.45">Gate volunteer Shwetha is expecting you. Ask for the gate QR at the east entrance.</div>
+                <div style="flex:1"></div>
+                <button onClick="{{ rArrived }}" disabled="{{ rArriveDisabled }}" style="height:56px;border:0;border-radius:16px;cursor:pointer;background:{{ rArriveBg }};color:{{ rArriveFg }};font-size:17px;font-weight:800;transition:background .3s">Arrived · scan gate QR</button>
+              </sc-if>
+              <sc-if value="{{ rS2 }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#3FD0C9">SCAN GATE QR</div>
+                <div style="position:relative;aspect-ratio:1;border-radius:20px;background:radial-gradient(circle at 50% 50%,#1A2438,#070B15);overflow:hidden">
+                  <div style="position:absolute;left:18%;top:18%;width:22%;height:22%;border-left:3px solid #3FD0C9;border-top:3px solid #3FD0C9;border-radius:8px 0 0 0"></div>
+                  <div style="position:absolute;right:18%;top:18%;width:22%;height:22%;border-right:3px solid #3FD0C9;border-top:3px solid #3FD0C9;border-radius:0 8px 0 0"></div>
+                  <div style="position:absolute;left:18%;bottom:18%;width:22%;height:22%;border-left:3px solid #3FD0C9;border-bottom:3px solid #3FD0C9;border-radius:0 0 0 8px"></div>
+                  <div style="position:absolute;right:18%;bottom:18%;width:22%;height:22%;border-right:3px solid #3FD0C9;border-bottom:3px solid #3FD0C9;border-radius:0 0 8px 0"></div>
+                  {{ scanLine }}
+                </div>
+                <div style="text-align:center;font-size:14px;color:#C7CEDB">Hold steady over the NIMHANS gate code…</div>
+              </sc-if>
+              <sc-if value="{{ rS3 }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#3FD0C9">GATE CONFIRMED</div>
+                <div style="padding:18px;border-radius:16px;background:rgba(63,208,201,.1);border:1px solid rgba(63,208,201,.4)">
+                  <div style="font-size:22px;font-weight:800">NIMHANS gate</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#8FE3DE;margin-top:4px">G-NIM-02 · volunteer Shwetha</div>
+                  <div style="font-size:13px;color:#C7CEDB;margin-top:10px">Batch OP-1116-RB matches this gate. Hand over 20 meals.</div>
+                </div>
+                <div style="flex:1"></div>
+                <button onClick="{{ rDelivered }}" style="height:56px;border:0;border-radius:16px;cursor:pointer;background:#3FD0C9;color:#04201E;font-size:17px;font-weight:800;box-shadow:0 8px 30px rgba(63,208,201,.35)">Delivered</button>
+              </sc-if>
+              <sc-if value="{{ rS4 }}" hint-placeholder-val="{{ false }}">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px">
+                  <div style="width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:rgba(63,208,201,.12);border:2px solid #3FD0C9;box-shadow:0 0 40px rgba(63,208,201,.35)">
+                    <svg width="44" height="44" viewBox="0 0 44 44"><path d="M10 23 L19 32 L35 13" fill="none" stroke="#3FD0C9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </div>
+                  <div style="font-size:26px;font-weight:800;letter-spacing:-.02em">20 meals delivered</div>
+                  <div style="font-size:14px;color:#8A94A7">NIMHANS gate · 21:33, one minute early</div>
+                </div>
+                <button onClick="{{ rReset }}" style="height:52px;border:1px solid rgba(255,255,255,.15);border-radius:16px;cursor:pointer;background:transparent;color:#E8ECF3;font-size:15px;font-weight:700">Back to base · replay</button>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+        <div style="width:380px;max-width:100%">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A94A7">RUNNER APP · LIVE SYNC</div>
+          <div style="font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-top:8px">Every tap updates the coordinator's plan.</div>
+          <div style="font-size:14px;color:#8A94A7;margin-top:10px;line-height:1.5">Runners confirm pickup and delivery from the phone. The gate QR proves the food reached the right place.</div>
+          <div style="margin-top:24px;display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ feed }}" as="f" hint-placeholder-count="2">
+              <div style="display:grid;grid-template-columns:48px 14px 1fr;gap:10px;align-items:start;padding:8px 0">
+                <div style="font-size:12px;color:#8A94A7;font-variant-numeric:tabular-nums">{{ f.time }}</div>
+                <div style="width:9px;height:9px;border-radius:50%;margin-top:4px;background:{{ f.color }};box-shadow:0 0 8px {{ f.color }}"></div>
+                <div style="font-size:13px;color:#E8ECF3">{{ f.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARISON -->
+    <div style="position:absolute;inset:0;display:{{ compareDisplay }};overflow:auto">
+      <div style="max-width:1120px;margin:0 auto;padding:40px 28px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A94A7">PLAN COMPARISON · SAME NIGHT, SAME DATA</div>
+            <div style="font-size:34px;font-weight:800;letter-spacing:-.02em;margin-top:8px">After Bakery C cancels at 20:40</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#8A94A7;padding:6px 10px;border:1px dashed rgba(255,255,255,.2);border-radius:6px">SIMULATION · SYNTHETIC DATA</div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:20px;align-items:center;margin-top:32px">
+          <div style="padding:26px;border-radius:18px;background:linear-gradient(180deg,rgba(245,165,36,.09),rgba(245,165,36,.02));border:1px solid rgba(245,165,36,.45);box-shadow:0 0 50px rgba(245,165,36,.08)">
+            <div style="font-size:13px;font-weight:700;color:#F5A524;letter-spacing:.04em">OOTAPASS</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><div style="font-size:84px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums">{{ cmpA }}</div><div style="font-size:26px;color:#8A94A7;font-weight:700">/ 140</div></div>
+            <div style="font-size:14px;color:#C7CEDB">meals reach the gates</div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px">
+              <sc-for list="{{ cmpRowsA }}" as="c" hint-placeholder-count="3">
+                <div><div style="display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:600">{{ c.gate }}</span><span style="color:{{ c.color }};font-weight:700;font-variant-numeric:tabular-nums">{{ c.text }}</span></div>
+                <div style="height:8px;border-radius:4px;background:rgba(255,255,255,.07);margin-top:5px;overflow:hidden"><div style="height:100%;width:{{ c.w }};background:{{ c.bar }}"></div></div></div>
+              </sc-for>
+            </div>
+            <div style="font-size:12px;color:#8A94A7;margin-top:18px">Travel per delivered meal · 0.238 km</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+            <div style="font-size:30px;font-weight:800;color:#F5A524;font-variant-numeric:tabular-nums">+{{ cmpDelta }}</div>
+            <div style="font-size:11px;color:#8A94A7;letter-spacing:.08em">MEALS</div>
+          </div>
+          <div style="padding:26px;border-radius:18px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.09)">
+            <div style="font-size:13px;font-weight:700;color:#8A94A7;letter-spacing:.04em">NEAREST-FIRST</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><div style="font-size:84px;font-weight:800;letter-spacing:-.04em;line-height:1;color:#AEB6C6;font-variant-numeric:tabular-nums">{{ cmpB }}</div><div style="font-size:26px;color:#5E687C;font-weight:700">/ 140</div></div>
+            <div style="font-size:14px;color:#8A94A7">meals reach the gates</div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px">
+              <sc-for list="{{ cmpRowsB }}" as="c" hint-placeholder-count="3">
+                <div><div style="display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:600;color:#C7CEDB">{{ c.gate }}</span><span style="color:{{ c.color }};font-weight:700;font-variant-numeric:tabular-nums">{{ c.text }}</span></div>
+                <div style="height:8px;border-radius:4px;background:rgba(255,255,255,.07);margin-top:5px;overflow:hidden"><div style="height:100%;width:{{ c.w }};background:{{ c.bar }}"></div></div></div>
+              </sc-for>
+            </div>
+            <div style="font-size:12px;color:#8A94A7;margin-top:18px">Travel per delivered meal · 0.240 km</div>
+          </div>
+        </div>
+        <div style="margin-top:22px;padding:16px 20px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:14px;color:#C7CEDB;line-height:1.5"><b style="color:#E8ECF3">Why the gap:</b> nearest-first sends each runner to the closest gate, so Wedding hall A's veg pulao is spent before veg-only Victoria is served. OotaPass routes non-veg food to gates that accept anything and saves veg food for Victoria.</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8A94A7;margin-top:36px">BENCHMARK · 500 RANDOM SYNTHETIC NIGHTS · SEED 2026</div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:12px">
+          <div style="padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,.07)"><div style="font-size:12px;color:#8A94A7">Avg. share of requested meals delivered</div><div style="display:flex;align-items:baseline;gap:10px;margin-top:8px"><div style="font-size:32px;font-weight:800;color:#F5A524">55.3%</div><div style="font-size:16px;color:#8A94A7">vs 49.2%</div></div></div>
+          <div style="padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,.07)"><div style="font-size:12px;color:#8A94A7">Nights with more / same / fewer meals</div><div style="font-size:32px;font-weight:800;margin-top:8px;font-variant-numeric:tabular-nums"><span style="color:#F5A524">166</span><span style="color:#5E687C"> / </span>309<span style="color:#5E687C"> / </span><span style="color:#AEB6C6">25</span></div></div>
+          <div style="padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,.07)"><div style="font-size:12px;color:#8A94A7">Travel per delivered meal</div><div style="display:flex;align-items:baseline;gap:10px;margin-top:8px"><div style="font-size:32px;font-weight:800">0.238 km</div><div style="font-size:16px;color:#8A94A7">vs 0.240</div></div></div>
+        </div>
+        <div style="font-size:12px;color:#5E687C;margin-top:14px">Many nights are deliberately short of food or runners, so neither method reaches 100%. These results test planning logic, not real-world impact.</div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;autoplay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;autoCancel&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;showLabels&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Map&quot;}}">
+const AMBER='#F5A524',TEAL='#3FD0C9',RED='#F0524A',MUTED='#8A94A7';
+const GATES={
+  Kidwai:{loc:[12.9377,77.5958],need:40,by:90,veg:false,full:'Kidwai Memorial Institute'},
+  Victoria:{loc:[12.9632,77.5745],need:60,by:120,veg:true,full:'Victoria & Vani Vilas'},
+  NIMHANS:{loc:[12.9431,77.5964],need:40,by:150,veg:false,full:'NIMHANS'}};
+const DONORS={
+  'hall-a':{name:'Wedding hall A',area:'Basavanagudi',item:'Vegetable pulao',portions:60,veg:true,ready:30,last:210,loc:[12.9428,77.5752],storage:'Hot, above 60°C',code:'HA'},
+  'rest-b':{name:'Restaurant B',area:'Jayanagar 4th Block',item:'Chicken rice',portions:60,veg:false,ready:40,last:220,loc:[12.9250,77.5838],storage:'Hot, above 60°C',code:'RB'},
+  'bake-c':{name:'Bakery C',area:'Hanumanthanagar',item:'Vegetable rolls',portions:40,veg:true,ready:45,last:225,loc:[12.9395,77.5560],storage:'Ambient, covered',code:'BC'},
+  'sup-d':{name:'Supermarket D',area:'Jayanagar 9th Block',item:'Curd rice',portions:24,veg:true,ready:80,last:230,loc:[12.9180,77.5930],storage:'Chilled, below 8°C',code:'SD'}};
+const HOME={r1:[12.9445,77.5698],r2:[12.9268,77.5805],r3:[12.9404,77.5712]};
+const fmt=m=>{m=Math.max(0,Math.min(240,m));const h=(20+Math.floor(m/60))%24;return String(h).padStart(2,'0')+':'+String(Math.floor(m%60)).padStart(2,'0');};
+const dur=m=>m<=0?'0m':m>=60?Math.floor(m/60)+'h '+String(Math.floor(m%60)).padStart(2,'0')+'m':Math.floor(m)+'m';
+const lerp=(a,b,f)=>[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f];
+function curve(a,b,n=32){const dx=b[0]-a[0],dy=b[1]-a[1];const c=[(a[0]+b[0])/2-dy*0.25,(a[1]+b[1])/2+dx*0.25];const p=[];for(let i=0;i<=n;i++){const t=i/n,u=1-t;p.push([u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]]);}return p;}
+function onCurve(pts,f){const x=Math.max(0,Math.min(1,f))*(pts.length-1);const i=Math.min(pts.length-2,Math.floor(x));return lerp(pts[i],pts[i+1],x-i);}
+const ease=f=>f<.5?2*f*f:1-Math.pow(-2*f+2,2)/2;
+function rescueTiming(rescueAt,cancelAt){const back=cancelAt>30?cancelAt+(cancelAt-30)*0.8:cancelAt;const dep=Math.max(rescueAt+4,back);return {dep,pick:dep+14,drop:dep+30};}
+function buildPlan(t,cancelAt,rescueAt){
+  const cancelled=cancelAt!=null&&t>=cancelAt;
+  const rescued=cancelled&&rescueAt!=null&&t>=rescueAt;
+  const HA=DONORS['hall-a'].loc,RB=DONORS['rest-b'].loc,BC=DONORS['bake-c'].loc,SD=DONORS['sup-d'].loc;
+  const V=GATES.Victoria.loc,K=GATES.Kidwai.loc,N=GATES.NIMHANS.loc;
+  const trips=[{id:'T1',runner:'r1',donor:'hall-a',gate:'Victoria',n:40,pick:32,drop:52},{id:'T2',runner:'r2',donor:'rest-b',gate:'Kidwai',n:40,pick:42,drop:60}];
+  if(!cancelled)trips.push({id:'T3',runner:'r3',donor:'bake-c',gate:'NIMHANS',n:20,pick:47,drop:68});
+  trips.push({id:'T4',runner:'r1',donor:'hall-a',gate:'Victoria',n:20,pick:72,drop:90},{id:'T5',runner:'r2',donor:'rest-b',gate:'NIMHANS',n:20,pick:78,drop:94});
+  const segs={r1:[{t0:20,t1:32,a:HOME.r1,b:HA},{t0:32,t1:52,a:HA,b:V,c:1},{t0:58,t1:72,a:V,b:HA},{t0:72,t1:90,a:HA,b:V,c:1}],
+    r2:[{t0:28,t1:42,a:HOME.r2,b:RB},{t0:42,t1:60,a:RB,b:K,c:1},{t0:64,t1:78,a:K,b:RB},{t0:78,t1:94,a:RB,b:N,c:1}],r3:[]};
+  if(!cancelled)segs.r3=[{t0:30,t1:47,a:HOME.r3,b:BC},{t0:47,t1:68,a:BC,b:N,c:1}];
+  else{const c=cancelAt;if(c>30){const p=lerp(HOME.r3,BC,(c-30)/17);segs.r3.push({t0:30,t1:c,a:HOME.r3,b:p},{t0:c,t1:c+(c-30)*0.8,a:p,b:HOME.r3});}
+    if(rescued){const r=rescueTiming(rescueAt,cancelAt);segs.r3.push({t0:r.dep,t1:r.pick,a:HOME.r3,b:SD},{t0:r.pick,t1:r.drop,a:SD,b:N,c:1});trips.push({id:'T6',runner:'r3',donor:'sup-d',gate:'NIMHANS',n:20,pick:r.pick,drop:r.drop});}}
+  trips.forEach(tr=>{tr.status=t<tr.pick?'reserved':t<tr.drop?'picked':'delivered';});
+  const g={};Object.keys(GATES).forEach(k=>{g[k]={planned:0,delivered:0,last:0};});
+  trips.forEach(tr=>{g[tr.gate].planned+=tr.n;if(tr.status==='delivered'){g[tr.gate].delivered+=tr.n;g[tr.gate].last=Math.max(g[tr.gate].last,tr.drop);}});
+  return {trips,segs,g,cancelled,rescued};
+}
+function runnerPos(segs,home,t){let pos=home,act=null;for(const s of segs){if(t>=s.t1){pos=s.b;continue;}if(t>=s.t0){const f=ease((t-s.t0)/(s.t1-s.t0));pos=s.c?onCurve(curve(s.a,s.b),f):lerp(s.a,s.b,f);act=s;}break;}return {pos,act};}
+
+class Component extends DCLogic {
+  state={t:14,playing:true,speed:1,cancelAt:40,rescueAt:null,tab:'board',passport:null,find:'idle',toast:null,replanning:false,shown:140,cmp:0,rStep:0,rProg:0,checks:{},
+    feed:[{time:'21:02',text:'Runner 2 checked in · shift 20:00–00:00',color:MUTED},{time:'21:04',text:'Assigned trip T5 · Restaurant B → NIMHANS',color:AMBER}]};
+  mapRef=React.createRef();trackRef=React.createRef();qrRef=React.createRef();
+  componentDidMount(){
+    const p=this.props||{};const patch={};
+    if(p.autoplay===false)patch.playing=false;
+    if(p.autoCancel===false)patch.cancelAt=null;
+    if(Object.keys(patch).length)this.setState(patch);
+    this.timer=setInterval(()=>{const s=this.state;if(!s.playing||this.dragging||s.tab!=='board')return;
+      const t=s.t+0.4*s.speed;this.setState(t>=240?{t:240,playing:false}:{t});},100);
+    this._prevTab=this.state.tab;this._onW=()=>this.setState({vw:window.innerWidth,vh:window.innerHeight});window.addEventListener('resize',this._onW);this._onW();this.initMap();
+  }
+  componentWillUnmount(){clearInterval(this.timer);clearTimeout(this._mt);clearInterval(this._raf);clearInterval(this._craf);if(this.map)this.map.remove();}
+  initMap(){
+    const go=()=>{const L=window.L;if(!L||!this.mapRef.current){this._tries=(this._tries||0)+1;if(this._tries<100)this._mt=setTimeout(go,100);return;}
+      const m=L.map(this.mapRef.current,{zoomControl:false,zoomSnap:0.25,attributionControl:true});
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Tiles © Esri · © OpenStreetMap contributors'}).addTo(m);
+      this.fit=()=>{const w=this.mapRef.current.clientWidth;const c=window.innerWidth<1300||window.innerHeight<700;m.fitBounds([[12.916,77.553],[12.965,77.602]],{paddingTopLeft:[c?30:330,c?120:30],paddingBottomRight:[30,105]});};this.fit();window.addEventListener('resize',()=>{m.invalidateSize();this.fit();});
+      m.getPane('tilePane').style.filter='brightness(.85) sepia(.25) hue-rotate(185deg) saturate(1.4)';
+      const at=m.attributionControl.getContainer();Object.assign(at.style,{background:'rgba(10,15,28,.7)',color:'#5E687C',fontSize:'10px'});
+      at.querySelectorAll('a').forEach(a=>a.style.color='#8A94A7');
+      this.map=m;this.markers={};this.routes={};this.syncMap();};
+    go();
+  }
+  componentDidUpdate(){
+    const s=this.state;const ps={tab:this._prevTab};this._prevTab=s.tab;
+    try{const plan=buildPlan(s.t,s.cancelAt,s.rescueAt);
+    const sig=plan.trips.map(x=>x.id).join(',');
+    if(this._sig&&sig!==this._sig){
+      const had=this._sig.split(',');const now=sig.split(',');
+      let toast=null;
+      if(had.includes('T3')&&!now.includes('T3'))toast={title:'Bakery C cancelled at '+fmt(s.cancelAt)+' · night re-planned',body:'NIMHANS is now 20 short. Alert sent: “20 more meals needed at NIMHANS by 22:30”.',color:RED};
+      else if(now.includes('T6')&&!had.includes('T6'))toast={title:'Shortfall closed · 140 of 140 planned',body:'Supermarket D → NIMHANS via Runner 3, arriving '+fmt(plan.trips.find(x=>x.id==='T6').drop)+'.',color:TEAL};
+      else if(now.includes('T3'))toast={title:'Rewound before the cancellation',body:'Original plan restored: 140 of 140.',color:AMBER};
+      if(toast)this.showToast(toast);
+      if(!this.dragging){this.setState({replanning:true});clearTimeout(this._rt);this._rt=setTimeout(()=>this.setState({replanning:false}),900);}
+    }
+    this._sig=sig;
+    const target=plan.trips.reduce((a,x)=>a+x.n,0);
+    if(target!==this._target){const from=this._target==null?target:s.shown;this._target=target;this.tween(from,target);}
+    if(ps.tab!==s.tab&&s.tab==='board'&&this.map)setTimeout(()=>this.map.invalidateSize(),50);
+    if(ps.tab!==s.tab&&s.tab==='compare')this.tweenCmp();
+    }catch(e){console.warn('didUpdate',e);}
+    try{this.syncMap();}catch(e){console.warn('syncMap',e);}
+    try{this.renderQR();}catch(e){console.warn('qr',e);}
+  }
+  tween(from,to){clearInterval(this._raf);const t0=performance.now(),D=1100;this._raf=setInterval(()=>{const f=Math.min(1,(performance.now()-t0)/D);const e=1-Math.pow(1-f,3);this.setState({shown:Math.round(from+(to-from)*e)});if(f>=1)clearInterval(this._raf);},30);}
+  tweenCmp(){clearInterval(this._craf);const t0=performance.now(),D=1400;this.setState({cmp:0});this._craf=setInterval(()=>{const f=Math.min(1,(performance.now()-t0)/D);this.setState({cmp:1-Math.pow(1-f,3)});if(f>=1)clearInterval(this._craf);},30);}
+  showToast(t){clearTimeout(this._tt);this.setState({toast:{...t,on:true}});this._tt=setTimeout(()=>this.setState(s=>({toast:s.toast&&{...s.toast,on:false}})),5200);}
+  renderQR(){const el=this.qrRef.current;const id=this.state.passport;if(!el||!id||this._qrFor===id||!window.qrcode)return;
+    const q=window.qrcode(0,'M');q.addData('https://ootapass.org/p/OP-1116-'+DONORS[id].code);q.make();
+    el.innerHTML=q.createSvgTag({cellSize:4,margin:0,scalable:true});const svg=el.querySelector('svg');if(svg){svg.style.width='104px';svg.style.height='104px';svg.querySelectorAll('rect').forEach(r=>{if(r.getAttribute('fill')==='white')r.setAttribute('fill','#F6F3EC');});}
+    this._qrFor=id;}
+  icon(kind,color,label,sub,pulse,side){const below=side==='below',left=side==='left',above=side==='above';
+    const halo=pulse?`<div style="position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:${color};opacity:.4;animation:oo-pulse 2.2s ease-out infinite"></div>`:'';
+    let dot;
+    if(kind==='gate')dot=`<div style="position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;border:2.5px solid ${color};box-sizing:border-box;background:rgba(10,15,28,.8);box-shadow:0 0 18px ${color}"></div><div style="position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:${color}"></div>`;
+    else if(kind==='donor')dot=`<div style="position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:${color};box-shadow:0 0 16px ${color},0 0 4px ${color}"></div>`;
+    else if(kind==='idle')dot=`<div style="position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55)"></div>`;
+    else dot=`<div style="position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 14px #fff,0 0 30px rgba(255,255,255,.5)"></div>`;
+    const showLabels=(this.props||{}).showLabels!==false;
+    const lab=kind==='idle'?'':(showLabels||kind==='runner')?`<div style="position:absolute;${above?'left:-50px;width:100px;text-align:center;bottom:12px':(left?'right:15px;text-align:right':'left:'+(below?-20:kind==='runner'?10:15)+'px')+';top:'+(below?14:kind==='runner'?-8:-11)+'px'};white-space:nowrap;font:${kind==='runner'?'700 10px':'700 12px'} 'Schibsted Grotesk',sans-serif;color:#E8ECF3;text-shadow:0 1px 6px #000,0 0 2px #000">${label}${sub?`<div style="font-weight:600;font-size:10px;color:${color};margin-top:1px">${sub}</div>`:''}</div>`:'';
+    return window.L.divIcon({className:'',iconSize:[0,0],html:`<div style="position:relative;width:0;height:0;cursor:pointer">${halo}${dot}${lab}</div>`});
+  }
+  syncMap(plan){
+    const L=window.L,m=this.map;if(!m)return;const s=this.state;plan=plan||buildPlan(s.t,s.cancelAt,s.rescueAt);
+    const want={};
+    Object.entries(GATES).forEach(([k,g])=>{const gp=plan.g[k];const short=gp.planned<g.need;const col=short?RED:TEAL;
+      want['g-'+k]={loc:g.loc,key:k+gp.planned+gp.delivered+short,mk:()=>this.icon('gate',col,k,gp.delivered+' delivered · '+gp.planned+'/'+g.need+' planned',short||gp.delivered<gp.planned,k==='Kidwai'?'below':'right'),z:200};});
+    Object.entries(DONORS).forEach(([id,d])=>{if(id==='sup-d'&&!plan.rescued&&s.find!=='found')return;
+      const cancelled=id==='bake-c'&&plan.cancelled;const col=cancelled?'#5E687C':AMBER;
+      want['d-'+id]={loc:d.loc,key:id+cancelled+s.find,mk:()=>this.icon('donor',col,d.name,cancelled?'<span style="color:#F0524A">Cancelled '+fmt(s.cancelAt)+'</span>':d.portions+' · '+d.item,!cancelled,id==='sup-d'?'right':id==='hall-a'?'above':'left'),z:100,click:()=>this.setState({passport:id})};});
+    ['r1','r2','r3'].forEach((r,i)=>{const {pos,act}=runnerPos(plan.segs[r],HOME[r],s.t);const mv=!!act;want['r-'+r]={loc:pos,key:'r'+mv,mk:()=>this.icon(mv?'runner':'idle','#fff',mv?'R'+(i+1):''),z:mv?1000:50,move:true};});
+    Object.entries(want).forEach(([id,w])=>{let mk=this.markers[id];
+      if(!mk){mk=L.marker(w.loc,{icon:w.mk(),zIndexOffset:w.z}).addTo(m);mk._k=w.key;if(w.click)mk.on('click',()=>{const c=this.markers[id]._click;c&&c();});this.markers[id]=mk;}
+      else{if(mk._k!==w.key){mk.setIcon(w.mk());mk._k=w.key;}if(w.move)mk.setLatLng(w.loc);}
+      mk._click=w.click;});
+    Object.keys(this.markers).forEach(id=>{if(!want[id]){m.removeLayer(this.markers[id]);delete this.markers[id];}});
+    const ids=new Set();
+    plan.trips.forEach(tr=>{ids.add(tr.id);let ln=this.routes[tr.id];
+      if(!ln){ln=L.polyline(curve(DONORS[tr.donor].loc,GATES[tr.gate].loc),{color:AMBER,weight:3,opacity:1,interactive:false,lineCap:'round'}).addTo(m);this.routes[tr.id]=ln;
+        const el=ln.getElement();if(el){const len=el.getTotalLength();el.style.strokeDasharray=len;el.style.strokeDashoffset=len;el.getBoundingClientRect();el.style.transition='stroke-dashoffset 1.3s cubic-bezier(.6,0,.2,1)';el.style.strokeDashoffset='0';}
+        setTimeout(()=>{ln._drawn=true;ln._st=null;this.styleRoute(ln);},1350);}
+      ln._want=tr.status;if(ln._drawn)this.styleRoute(ln);});
+    Object.keys(this.routes).forEach(id=>{if(!ids.has(id)){const ln=this.routes[id];delete this.routes[id];const el=ln.getElement();
+      if(el){el.style.animation='none';el.style.transition='opacity .9s, stroke .2s';el.style.stroke=RED;el.style.strokeDasharray='none';requestAnimationFrame(()=>{el.style.opacity='0';});}setTimeout(()=>m.removeLayer(ln),950);}});
+  }
+  styleRoute(ln){if(ln._st===ln._want)return;ln._st=ln._want;const el=ln.getElement();if(!el)return;el.style.transition='opacity .5s, stroke .5s, stroke-width .3s';
+    if(ln._want==='reserved')Object.assign(el.style,{stroke:AMBER,opacity:'.55',strokeDasharray:'2 8',strokeDashoffset:'0',animation:'none',strokeWidth:'2.5',filter:'none'});
+    else if(ln._want==='picked')Object.assign(el.style,{stroke:AMBER,opacity:'1',strokeDasharray:'12 7',animation:'oo-flow .8s linear infinite',strokeWidth:'4',filter:'drop-shadow(0 0 5px rgba(245,165,36,.9))'});
+    else Object.assign(el.style,{stroke:TEAL,opacity:'.4',strokeDasharray:'none',animation:'none',strokeWidth:'2.5',filter:'none'});}
+  scrubAt(e){const r=this.trackRef.current.getBoundingClientRect();const f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));this.setState({t:f*240});}
+  startFind=()=>{this.setState({find:'searching',searchI:0});let i=0;clearInterval(this._si);this._si=setInterval(()=>{i++;this.setState({searchI:i});if(i>=4){clearInterval(this._si);this.setState({find:'found'});}},450);};
+  rPicked=()=>{this.addFeed('Picked up 20 × chicken rice at Restaurant B',AMBER);this.setState({rStep:1,rProg:0});const t0=performance.now();clearInterval(this._ri);this._ri=setInterval(()=>{const f=Math.min(1,(performance.now()-t0)/3500);this.setState({rProg:f});if(f>=1)clearInterval(this._ri);},50);};
+  rArrived=()=>{this.setState({rStep:2});setTimeout(()=>{this.addFeed('Gate QR scanned · NIMHANS G-NIM-02',TEAL);this.setState({rStep:3});},2200);};
+  rDelivered=()=>{this.addFeed('Delivered 20 meals at NIMHANS gate · plan updated',TEAL);this.setState({rStep:4});};
+  addFeed(text,color){const times=['21:18','21:31','21:32','21:33'];this.setState(s=>({feed:[...s.feed,{time:times[Math.min(3,s.feed.length-2)],text,color}]}));}
+  renderVals(){
+    const s=this.state;const t=s.t;const plan=buildPlan(t,s.cancelAt,s.rescueAt);
+    const total=plan.trips.reduce((a,x)=>a+x.n,0);const delivered=plan.trips.filter(x=>x.status==='delivered').reduce((a,x)=>a+x.n,0);
+    const tab=k=>({label:{board:'Night board',runner:'Runner app',compare:'Plan comparison'}[k],bg:s.tab===k?'rgba(245,165,36,.16)':'transparent',color:s.tab===k?AMBER:'#AEB6C6',onClick:()=>this.setState({tab:k})});
+    const gates=Object.entries(GATES).sort((a,b)=>a[1].by-b[1].by).map(([k,g])=>{const gp=plan.g[k];const short=gp.planned<g.need;const met=gp.delivered>=g.need;
+      const vegN=plan.trips.filter(x=>x.gate===k&&DONORS[x.donor].veg).reduce((a,x)=>a+x.n,0);
+      return {name:k,full:g.full,by:fmt(g.by),vegOnly:g.veg,need:g.need,planned:gp.planned,plannedW:(gp.planned/g.need*100)+'%',deliveredW:(gp.delivered/g.need*100)+'%',shortOp:short?1:0,
+        numColor:short?RED:'#E8ECF3',border:short?'rgba(240,82,74,.45)':met?'rgba(63,208,201,.35)':'rgba(255,255,255,.07)',
+        status:met?'Met at '+fmt(gp.last):t>g.by?'Deadline passed':short?(g.need-gp.planned)+' short · '+dur(g.by-t)+' left':dur(g.by-t)+' left',
+        statusColor:met?TEAL:short||t>g.by?RED:MUTED,deliveredText:gp.delivered+' delivered',mix:gp.planned?(vegN===gp.planned?'all veg':vegN?vegN+' veg · '+(gp.planned-vegN)+' non-veg':'non-veg'):'no food planned'};});
+    const shortG=Object.entries(GATES).filter(([k,g])=>plan.g[k].planned<g.need);
+    const canRescue=s.cancelAt!=null&&rescueTiming(t,s.cancelAt).drop<=150;
+    const shortfalls=shortG.map(([k,g])=>({gate:k,short:g.need-plan.g[k].planned,by:fmt(g.by),why:'Bakery C cancelled at '+fmt(s.cancelAt)+'; no other suitable food can reach '+k+' in time.',
+      tags:['FOOD','TRANSPORT','TIME','RECEIVING CAPACITY'].map((l,i)=>i===0?{label:l,bg:RED,color:'#fff',border:RED}:{label:l,bg:'transparent',color:'#7D6A6A',border:'rgba(255,255,255,.1)'})}));
+    const donors=Object.entries(DONORS).filter(([id])=>id!=='sup-d'||plan.rescued).map(([id,d])=>{const cancelled=id==='bake-c'&&plan.cancelled;const left=d.last-t;const frac=Math.max(0,Math.min(1,left/(d.last-d.ready)));
+      const trips=plan.trips.filter(x=>x.donor===id);const used=trips.reduce((a,x)=>a+x.n,0);const picked=trips.filter(x=>x.status!=='reserved').length;
+      return {name:d.name,area:d.area,item:d.item,portions:d.portions,vegColor:d.veg?'#7BD88F':'#E8A27E',ringOffset:94.25*(1-(cancelled?0:frac)),ringColor:left<45?RED:AMBER,deco:cancelled?'line-through':'none',opacity:cancelled?.55:1,
+        bg:s.passport===id?'rgba(245,165,36,.08)':'rgba(255,255,255,.025)',
+        status:cancelled?'Cancelled by donor at '+fmt(s.cancelAt):t<d.ready?'Ready at '+fmt(d.ready)+' · '+used+' planned':used+' planned · '+picked+'/'+trips.length+' trips picked up · '+dur(left)+' to use-by',
+        statusColor:cancelled?RED:MUTED,canCancel:id==='bake-c'&&!cancelled&&t<47,
+        onOpen:()=>this.setState({passport:id}),onCancel:e=>{e.stopPropagation();this.setState({cancelAt:Math.max(1,Math.round(t)),rescueAt:null,find:'idle'});}};});
+    const runners=['r1','r2','r3'].map((r,i)=>{const {act}=runnerPos(plan.segs[r],HOME[r],t);let a='At base · free';
+      if(act){if(act.c){const tr=plan.trips.find(x=>x.runner===r&&x.status==='picked');a=tr?'Carrying '+tr.n+' meals → '+tr.gate+' · ETA '+fmt(tr.drop):'In transit';}else{const tr=plan.trips.find(x=>x.runner===r&&x.status==='reserved');a=tr?'Heading to '+DONORS[tr.donor].name+' · pickup '+fmt(tr.pick):'Returning to base';}}
+      return {code:'R'+(i+1),activity:a,bg:act?'#fff':'rgba(255,255,255,.08)',fg:act?'#0A0F1C':MUTED,glow:act?'0 0 12px rgba(255,255,255,.5)':'none'};});
+    const marks=[{left:(90/240*100)+'%',color:TEAL,label:'KID'},{left:(120/240*100)+'%',color:TEAL,label:'VIC'},{left:(150/240*100)+'%',color:TEAL,label:'NIM'}];
+    if(s.cancelAt!=null)marks.push({left:(s.cancelAt/240*100)+'%',color:RED,label:'CANCEL'});
+    if(s.rescueAt!=null)marks.push({left:(s.rescueAt/240*100)+'%',color:AMBER,label:'RESCUE'});
+    let pp={};const pid=s.passport||'hall-a';const d=DONORS[pid];
+    {const cancelled=pid==='bake-c'&&plan.cancelled;const left=d.last-t;const frac=Math.max(0,Math.min(1,left/(d.last-d.ready)));
+      const trips=plan.trips.filter(x=>x.donor===pid).map(tr=>{const order=['reserved','picked','delivered'];const si=order.indexOf(tr.status);
+        return {title:tr.id+' · '+tr.n+' meals → '+tr.gate+' · Runner '+tr.runner.slice(1),steps:[['Reserved',''],['Picked up',fmt(tr.pick)],['Delivered',fmt(tr.drop)]].map(([l,tm],i)=>({label:l,time:i===0?'by plan':(i<=si?'':'due ')+tm,
+          bg:i<si?'rgba(63,208,201,.1)':i===si?'rgba(245,165,36,.15)':'transparent',border:i<si?'rgba(63,208,201,.35)':i===si?AMBER:'rgba(255,255,255,.08)',color:i<si?TEAL:i===si?AMBER:MUTED}))};});
+      const ck=[['sealed','Packaging sealed and labelled'],['temp','Temperature matches storage'],['match','Item and count match passport']].map(([k,l])=>{const on=!!s.checks[pid+k];return {label:l,mark:on?'✓':'',fill:on?TEAL:'transparent',color:on?TEAL:'#5E687C',onClick:()=>this.setState(st=>({checks:{...st.checks,[pid+k]:!on}}))};});
+      const nOn=ck.filter(c=>c.mark).length;
+      pp={batch:'OP-1116-'+d.code,item:d.item,donor:d.name,area:d.area,portions:d.portions,ready:fmt(d.ready),useBy:fmt(d.last),storage:d.storage,vegColor:d.veg?'#1E8E3E':'#8B4513',vegLabel:d.veg?'VEG':'NON-VEG',
+        left:cancelled?'—':dur(left),ringOffset:251.3*(1-(cancelled?0:frac)),ringColor:left<45?RED:AMBER,cancelled,cancelTime:fmt(s.cancelAt),trips,noTrips:trips.length===0,checks:ck,
+        checkText:nOn===3?'Batch accepted by NGO at pickup':nOn+' of 3 checks done',checkColor:nOn===3?TEAL:MUTED};}
+    const cA=[['Kidwai',40,40],['Victoria',60,60],['NIMHANS',20,40]],cB=[['Kidwai',40,40],['Victoria',40,60],['NIMHANS',20,40]];
+    const rows=(arr,main)=>arr.map(([g,v,n])=>({gate:g,text:v+'/'+n,color:v<n?RED:main?'#E8ECF3':'#AEB6C6',w:(v/n*100*s.cmp)+'%',bar:v<n?'linear-gradient(90deg,'+(main?AMBER:'#6B7488')+','+RED+')':main?AMBER:'#6B7488'}));
+    const rEtaMin=Math.max(0,Math.ceil(8*(1-s.rProg)));
+    const searchMsgs=['Checking 14 partner kitchens…','Filtering veg-safe, in-date lots…','Matching a free runner…','Checking arrival before 22:30…','Match found'];
+    const toast=s.toast||{};
+    return {
+      tabs:['board','runner','compare'].map(tab),wideDisplay:(s.vw||1400)>=1200?'block':'none',...(()=>{const c=(s.vw||1400)<1300||(s.vh||900)<700;return {cardW:c?'auto':'300px',cardPad:c?'10px 14px':'18px 20px',fullBlock:c?'none':'block',fullFlex:c?'none':'flex',numMt:c?'0':'6px',numSize:c?'40px':'76px',subSize:c?'12px':'15px'};})(),wideFlex:(s.vw||1400)>=1050?'flex':'none',boardDisplay:s.tab==='board'?'grid':'none',runnerDisplay:s.tab==='runner'?'block':'none',compareDisplay:s.tab==='compare'?'block':'none',
+      reset:()=>{this.setState({t:14,playing:true,cancelAt:(this.props||{}).autoCancel===false?null:40,rescueAt:null,find:'idle',passport:null,checks:{}});},
+      clock:fmt(t),playLabel:s.playing?'❚❚':'▶',togglePlay:()=>this.setState(st=>({playing:!st.playing,t:st.t>=240?0:st.t})),
+      speeds:[1,2,4].map(v=>({label:v+'×',bg:s.speed===v?'rgba(245,165,36,.2)':'transparent',color:s.speed===v?AMBER:MUTED,onClick:()=>this.setState({speed:v})})),
+      progressPct:(t/240*100)+'%',marks,trackRef:this.trackRef,mapRef:this.mapRef,qrRef:this.qrRef,
+      scrubDown:e=>{this.dragging=true;e.currentTarget.setPointerCapture(e.pointerId);this.scrubAt(e);},scrubMove:e=>{if(this.dragging)this.scrubAt(e);},scrubUp:()=>{this.dragging=false;},
+      shown:s.shown,headColor:total<140?'#FFB4AE':'#fff',deliveredPct:(delivered/140*100)+'%',deliveredText:delivered+' delivered so far',
+      shortText:total<140?(140-total)+' short at NIMHANS':'no shortfalls',shortColor:total<140?RED:TEAL,
+      toastY:toast.on?'0':'-140%',toastOp:toast.on?1:0,toastColor:toast.color||AMBER,toastTitle:toast.title||'',toastBody:toast.body||'',
+      replanOp:s.replanning?1:0,
+      spinner:React.createElement('div',{style:{width:14,height:14,borderRadius:'50%',border:'2px solid rgba(245,165,36,.25)',borderTopColor:AMBER,animation:'oo-spin .7s linear infinite',flex:'none'}}),
+      drawerX:s.passport?'0':'105%',closePassport:()=>this.setState({passport:null}),pp,
+      gates,shortfalls,donors,runners,
+      findIdle:s.find==='idle'&&canRescue,findSearching:s.find==='searching',findFound:s.find==='found'&&canRescue,findLate:!canRescue,
+      searchText:searchMsgs[Math.min(4,s.searchI||0)],startFind:this.startFind,rescueEta:s.cancelAt!=null?fmt(rescueTiming(t,s.cancelAt).drop):'',
+      acceptRescue:()=>this.setState({rescueAt:Math.round(t)+1,find:'idle',playing:true}),dismissFind:()=>this.setState({find:'idle'}),
+      cmpA:Math.round(120*s.cmp),cmpB:Math.round(100*s.cmp),cmpDelta:Math.round(20*s.cmp),cmpRowsA:rows(cA,true),cmpRowsB:rows(cB,false),
+      rSteps:[0,1,2,3].map(i=>({bg:i<s.rStep||(i===s.rStep&&s.rStep<4)?(i<s.rStep?TEAL:AMBER):'rgba(255,255,255,.1)'})),
+      rS0:s.rStep===0,rS1:s.rStep===1,rS2:s.rStep===2,rS3:s.rStep===3,rS4:s.rStep===4,
+      rPicked:this.rPicked,rArrived:this.rArrived,rDelivered:this.rDelivered,rReset:()=>this.setState({rStep:0,rProg:0}),
+      rEta:s.rProg>=1?'Arrived':rEtaMin+' min · '+(2.6*(1-s.rProg)).toFixed(1)+' km',rProgW:(s.rProg*100)+'%',rArriveDisabled:s.rProg<1,rArriveBg:s.rProg<1?'rgba(255,255,255,.08)':TEAL,rArriveFg:s.rProg<1?'#5E687C':'#04201E',
+      scanLine:React.createElement('div',{style:{position:'absolute',left:'14%',right:'14%',height:3,borderRadius:2,background:TEAL,boxShadow:'0 0 18px 4px rgba(63,208,201,.6)',animation:'oo-scan 2s ease-in-out infinite'}}),
+      feed:s.feed
+    };
+  }
+}
+</script>
+</body>
+</html>
