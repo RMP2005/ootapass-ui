@@ -1,0 +1,12 @@
+{
+  "nights": 500,
+  "seed": 2026,
+  "coverage_ootapass": 0.553,
+  "coverage_nearest_first": 0.492,
+  "more": 166,
+  "same": 309,
+  "fewer": 25,
+  "km_per_meal_ootapass": 0.238,
+  "km_per_meal_nearest_first": 0.24,
+  "assumptions": "Road distance = 1.4 x straight line, 20 km/h, 10 min per handover, 40-meal bags."
+}
