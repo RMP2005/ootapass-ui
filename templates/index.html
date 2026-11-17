@@ -3,12 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OotaPass · Tonight's plan</title>
+  <title>OotaPass · Good food. Right place.</title>
+  <meta name="description" content="Connect surplus kitchens, hospital-gate requests and NGO runners into one explainable plan for the night.">
   <meta name="theme-color" content="#0A0F1C">
   <link rel="preload" href="{{ url_for('static', filename='fonts/schibsted-grotesk-latin-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2324316B'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%23E2A11B' stroke-width='4'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
 </head>
 <body class="dispatch-app">
 <a class="skip" href="#panel">Skip to dispatch details</a>
@@ -21,6 +23,8 @@
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></symbol>
 </defs></svg>
+{% include "landing.html" %}
+<div id="dispatch" tabindex="-1"></div>
 <div class="app-shell" id="app-shell" data-view="gates">
   <aside class="rail">
     <a class="brand" href="/" aria-label="OotaPass night dispatch"><span class="mark" aria-hidden="true"></span><span class="wordmark">OotaPass<span>ಊಟ · Night dispatch</span></span></a>
@@ -36,7 +40,7 @@
     <div class="rail-bottom"><button class="rail-link" data-open="evidence">Planner evidence <span aria-hidden="true">↗</span></button><button class="rail-link" id="reset">Reset demo <span aria-hidden="true">↺</span></button><a class="rail-link" href="/console/">Interactive walkthrough <span aria-hidden="true">↗</span></a><p>Synthetic data · Prototype</p></div>
   </aside>
   <div class="app-content">
-    <header class="topbar"><div><p class="breadcrumb">Operations <span>/ Tonight</span></p><h1 id="view-title">Night board</h1></div><nav class="actions" aria-label="Actions"><button class="btn secondary" data-open="request-dialog">Log a request</button><button class="btn primary" data-open="surplus-dialog"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Log surplus</button></nav></header>
+    <header class="topbar"><div><p class="breadcrumb">Operations <span>/ Tonight</span></p><h2 id="view-title">Night board</h2></div><nav class="actions" aria-label="Actions"><button class="btn secondary" data-open="request-dialog">Log a request</button><button class="btn primary" data-open="surplus-dialog"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Log surplus</button></nav></header>
     <main>
       <section class="status" aria-live="polite"><div class="status-copy"><p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>Tonight’s allocation</p><h2 id="headline">Building the night’s plan…</h2><p id="subline"></p></div><div class="coverage-readout"><span id="coverage">— / —</span><span>meals planned</span></div><div class="shortfall-readout"><span id="shortfall-count">—</span><span>meals uncovered</span></div><p id="alertline" class="alertline" hidden></p></section>
       <section class="workspace">
@@ -137,5 +141,6 @@
 
   <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
 </body>
 </html>

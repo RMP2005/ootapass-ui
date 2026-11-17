@@ -54,4 +54,19 @@ python3 -m venv .venv
 .venv/bin/python -m flask --app app run --port 5055
 ```
 
-Open `http://127.0.0.1:5055/console/` for the redesigned walkthrough, or `http://127.0.0.1:5055/` for the redesigned working planner. To isolate QA data, prefix the command with `OOTAPASS_DB=/tmp/ootapass-qa.db`.
+Open `http://127.0.0.1:5055/console/` for the redesigned walkthrough, or `http://127.0.0.1:5055/` for the landing experience and `http://127.0.0.1:5055/#dispatch` for the working planner. To isolate QA data, prefix the command with `OOTAPASS_DB=/tmp/ootapass-qa.db`.
+
+
+## Landing experience
+
+The root page now opens with an editorial introduction before the existing working planner. A vermilion hero places original food, gate, deadline and route illustrations in a spatial composition inspired by [Cosmos](https://www.cosmos.so/). Scroll progressively brings the night-plan sheet forward in 3D, then leads through surplus details, passports, shortfall reasons and the existing synthetic benchmark. Navy and cream remain the bridge into the operation views; sage and warm yellow distinguish the explanation sections. No Cosmos assets or code were copied.
+
+Unslop informed the audit and removal of generic dashboard treatment; UI UX Pro Max informed typography, contrast, responsive layout and motion restraint; Open Design's craft and hierarchy references informed the editorial sections and native interaction states. The existing skill credits and licences above still apply. No runtime dependencies were added.
+
+Feature links select the existing supply, trips and activity tabs; the evidence link opens the existing modal. The planner remains at `/#dispatch`, and `/console/` remains the separate scripted walkthrough. Every existing operation stays available. The reduced-motion layout removes the scroll camera and presents a static hero followed by the same explanatory sections. Hidden camera controls are removed from keyboard focus with `inert`.
+
+Landing verification: rendered at desktop and mobile widths; zero horizontal page overflow at 375, 768, 1024 and 1440px. Checked all chapter anchors, the mobile zoom framing, planner entry, supply/trip links, evidence modal and Escape. No captured browser warnings/errors. The original 7 tests and isolated API smoke pass again; backend/test/benchmark files remain byte-identical to baseline. Reduced-motion rules were inspected, not OS-emulated.
+
+![Landing hero](frontend/landing-hero-desktop.png)
+
+[Mobile hero](frontend/landing-hero-mobile.png) · [Mobile camera chapter](frontend/landing-scroll-mobile.png) · [Surplus section](frontend/landing-food-section.png)
