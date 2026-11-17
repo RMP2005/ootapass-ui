@@ -1406,5 +1406,8 @@ html[data-surface="workspace"] .lp { display:none; }
  .lp-orbit-enabled .lp-timing { display:none; }
 }
 
-.lp-nav { background:var(--lp-red); }
+/* Let orbit cards pass through one continuous hero canvas. */
+.lp-nav { background:transparent; }
+.lp-nav nav>a { background:var(--lp-red); }
+.lp-nav nav>a:hover { background:#8C3027; }
 @media(min-width:700px) and (max-height:800px) { .lp-hero-copy { top:18%; } }
