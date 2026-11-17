@@ -34,7 +34,7 @@ button{font-family:inherit}
 .leaflet-container{background:#0A0F1C;font-family:'Schibsted Grotesk',system-ui,sans-serif}
 </style>
 </helmet>
-<div class="demo-shell" style="height:100vh;min-height:420px;display:flex;flex-direction:column;background:#0A0F1C;overflow:hidden">
+<div class="demo-shell" data-view="{{ currentView }}" style="height:100vh;min-height:420px;display:flex;flex-direction:column;background:#0A0F1C;overflow:hidden">
   <header class="demo-rail" style="height:60px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;min-width:0;border-bottom:1px solid rgba(255,255,255,.07);background:#0C1222;position:relative;z-index:20">
     <div style="display:flex;align-items:center;gap:10px">
       <img class="ootapass-mark" src="/static/img/ootapass-mark.svg" width="32" height="32" alt="">
@@ -44,7 +44,7 @@ button{font-family:inherit}
     <div class="demo-region" style="display:{{ wideDisplay }};font-size:13px;color:#8A94A7;padding-left:16px;border-left:1px solid rgba(255,255,255,.08);white-space:nowrap">Night of 16 Nov · South Bengaluru</div>
     <nav aria-label="Console views" class="demo-navigation" style="margin:0 auto;display:flex;min-width:0;flex-shrink:1;overflow:hidden;gap:4px;padding:4px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px">
       <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="3">
-        <button aria-pressed="{{ tb.selected }}" onClick="{{ tb.onClick }}" style="border:0;cursor:pointer;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap;background:{{ tb.bg }};color:{{ tb.color }};transition:background .2s,color .2s">{{ tb.label }}</button>
+        <button data-feature="{{ tb.key }}" aria-pressed="{{ tb.selected }}" onClick="{{ tb.onClick }}" style="border:0;cursor:pointer;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap;background:{{ tb.bg }};color:{{ tb.color }};transition:background .2s,color .2s">{{ tb.label }}</button>
       </sc-for>
     </nav>
     <div class="demo-synthetic" style="display:{{ wideFlex }};align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.08em;color:#8A94A7;white-space:nowrap;padding:5px 10px;border:1px dashed rgba(255,255,255,.15);border-radius:6px">Scripted demo · Synthetic data</div>
@@ -52,7 +52,7 @@ button{font-family:inherit}
   </header>
 
   <main class="demo-main" style="flex:1;min-height:0;position:relative">
-    <div class="demo-titlebar"><div><p>Scripted walkthrough / South Bengaluru</p><h1>Tonight’s food-recovery desk</h1></div><a href="/?workspace=dispatch">Open working app ↗</a></div>
+    <div class="demo-titlebar"><div><p>Scripted walkthrough / South Bengaluru</p><h1>{{ workspaceTitle }}</h1></div><a href="/?workspace=dispatch">Open working app ↗</a></div>
     <!-- NIGHT BOARD -->
     <div class="demo-board" style="position:absolute;inset:0;display:{{ boardDisplay }};grid-template-columns:minmax(0,1fr) 410px">
       <div class="demo-map" style="position:relative;min-width:0;overflow:hidden">
@@ -581,7 +581,7 @@ class Component extends DCLogic {
   renderVals(){
     const s=this.state;const t=s.t;const plan=buildPlan(t,s.cancelAt,s.rescueAt);
     const total=plan.trips.reduce((a,x)=>a+x.n,0);const delivered=plan.trips.filter(x=>x.status==='delivered').reduce((a,x)=>a+x.n,0);
-    const tab=k=>({selected:s.tab===k,label:{board:'Night board',runner:'Runner app',compare:'Plan comparison'}[k],bg:s.tab===k?'rgba(245,165,36,.16)':'transparent',color:s.tab===k?AMBER:'#AEB6C6',onClick:()=>this.setState({tab:k})});
+    const tab=k=>({key:k,selected:s.tab===k,label:{board:'Night board',runner:'Runner app',compare:'Plan comparison'}[k],bg:s.tab===k?'rgba(245,165,36,.16)':'transparent',color:s.tab===k?AMBER:'#AEB6C6',onClick:()=>this.setState({tab:k})});
     const gates=Object.entries(GATES).sort((a,b)=>a[1].by-b[1].by).map(([k,g])=>{const gp=plan.g[k];const short=gp.planned<g.need;const met=gp.delivered>=g.need;
       const vegN=plan.trips.filter(x=>x.gate===k&&DONORS[x.donor].veg).reduce((a,x)=>a+x.n,0);
       return {name:k,full:g.full,by:fmt(g.by),vegOnly:g.veg,need:g.need,planned:gp.planned,plannedW:(gp.planned/g.need*100)+'%',deliveredW:(gp.delivered/g.need*100)+'%',shortOp:short?1:0,
@@ -624,6 +624,7 @@ class Component extends DCLogic {
       tabs:['board','runner','compare'].map(tab),wideDisplay:(s.vw||1400)>=1200?'block':'none',...(()=>{const c=(s.vw||1400)<1300||(s.vh||900)<700;return {cardW:c?'auto':'300px',cardPad:c?'10px 14px':'18px 20px',fullBlock:c?'none':'block',fullFlex:c?'none':'flex',numMt:c?'0':'6px',numSize:c?'40px':'76px',subSize:c?'12px':'15px'};})(),wideFlex:(s.vw||1400)>=1050?'flex':'none',boardDisplay:s.tab==='board'?'grid':'none',runnerDisplay:s.tab==='runner'?'block':'none',compareDisplay:s.tab==='compare'?'block':'none',
       reset:()=>{this.setState({t:14,playing:true,cancelAt:(this.props||{}).autoCancel===false?null:40,rescueAt:null,find:'idle',passport:null,checks:{}});},
       replayMinute:Math.round(t),scrubKey:e=>{const step=e.shiftKey?15:5;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();this.setState({t:Math.max(0,Math.min(240,t+(e.key==='ArrowRight'?step:-step)))});}},clock:fmt(t),playLabel:s.playing?'❚❚':'▶',togglePlay:()=>this.setState(st=>({playing:!st.playing,t:st.t>=240?0:st.t})),
+      currentView:s.tab, workspaceTitle:{board:'Tonight’s food-recovery desk',runner:'Runner app',compare:'Two plans. The same night.'}[s.tab],
       speeds:[1,2,4].map(v=>({label:v+'×',bg:s.speed===v?'rgba(245,165,36,.2)':'transparent',color:s.speed===v?AMBER:MUTED,onClick:()=>this.setState({speed:v})})),
       progressPct:(t/240*100)+'%',marks,trackRef:this.trackRef,mapRef:this.mapRef,qrRef:this.qrRef,
       scrubDown:e=>{this.dragging=true;e.currentTarget.setPointerCapture(e.pointerId);this.scrubAt(e);},scrubMove:e=>{if(this.dragging)this.scrubAt(e);},scrubUp:()=>{this.dragging=false;},
