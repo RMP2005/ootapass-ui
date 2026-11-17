@@ -57,6 +57,58 @@
       previousChapter = chapter;
     }
   }
+  // Orbit only the decorative objects. Navigation and content never move.
+  const cards = [...stage.querySelectorAll('.lp-object')];
+  const phases = cards.map((_, i) => -155 + i * 360 / cards.length);
+  const motionButton = stage.querySelector('.lp-motion-toggle');
+  let paused = false;
+  let visible = true;
+  let orbitFrame = 0;
+  let elapsed = 0;
+  let lastTick = 0;
+  stage.classList.add('lp-orbit-enabled');
+  function positionCards() {
+    const small = innerWidth < 700;
+    const radiusX = innerWidth * (small ? .70 : .55);
+    const radiusY = stage.clientHeight * (small ? .40 : .50);
+    cards.forEach((card, i) => {
+      const angle = phases[i] * Math.PI / 180 + elapsed / 65000 * Math.PI * 2;
+      const depth = Math.sin(angle) * 36;
+      card.style.setProperty('--orbit-x', `${Math.cos(angle) * radiusX}px`);
+      card.style.setProperty('--orbit-y', `${Math.sin(angle) * radiusY}px`);
+      card.style.setProperty('--orbit-z', `${depth}px`);
+      card.style.setProperty('--orbit-tilt', `${Math.sin(angle * 1.5) * 14}deg`);
+      card.style.setProperty('--orbit-turn', `${Math.cos(angle) * 16}deg`);
+    });
+  }
+  function tick(time) {
+    orbitFrame = 0;
+    const rect = flight.getBoundingClientRect();
+    const inHero = rect.top > -innerHeight * .55;
+    if (!paused && !preference.matches && visible && !document.hidden && inHero) {
+      if (lastTick) elapsed += Math.min(time - lastTick, 80);
+      positionCards();
+      lastTick = time;
+      orbitFrame = requestAnimationFrame(tick);
+    } else lastTick = 0;
+  }
+  function startOrbit() { if (!orbitFrame) orbitFrame = requestAnimationFrame(tick); }
+  motionButton?.addEventListener('click', () => {
+    paused = !paused;
+    motionButton.setAttribute('aria-pressed', String(paused));
+    motionButton.textContent = paused ? 'Resume card motion' : 'Pause card motion';
+    startOrbit();
+  });
+  new IntersectionObserver(entries => {
+    visible = entries[0].isIntersecting;
+    startOrbit();
+  }).observe(stage);
+  addEventListener('resize', () => { positionCards(); startOrbit(); });
+  addEventListener('scroll', startOrbit, { passive: true });
+  document.addEventListener('visibilitychange', startOrbit);
+  preference.addEventListener('change', startOrbit);
+  positionCards();
+  startOrbit();
   function schedule() { if (!frame) frame = requestAnimationFrame(render); }
   addEventListener('scroll', schedule, { passive: true });
   addEventListener('resize', schedule);

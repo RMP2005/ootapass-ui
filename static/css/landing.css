@@ -1322,3 +1322,89 @@ html[data-surface="workspace"] .lp { display:none; }
 .lp-chapter-dots a.is-active { background:#F3C94F; color:#132334; border-color:#F3C94F; }
 .lp-brand .ootapass-mark { width:30px; height:30px; }
 @media(max-width:699px) { .lp-nav nav>a { padding:10px; font-size:10px; } .lp-skip { padding:8px; min-height:32px; } .lp-journey-link { padding:10px 12px; min-height:40px; } }
+
+/* A slow, spatial orbit around the headline; scroll still brings the plan forward. */
+.lp-orbit-enabled .lp-object {
+  left:50%; top:50%; right:auto; bottom:auto;
+  transform:translate3d(calc(-50% + var(--orbit-x,0px)),calc(-50% + var(--orbit-y,0px)),var(--orbit-z,0px)) rotateZ(var(--orbit-tilt,0deg)) rotateY(var(--orbit-turn,0deg));
+  will-change:transform;
+}
+.lp-orbit-enabled .lp-timing { background:#F4EBD9EC; border:1px solid #FFFFFF66; backdrop-filter:blur(8px); }
+.lp-motion-toggle {
+  position:absolute; z-index:25; bottom:22px; left:40px;
+  border:1px solid #E8B4A2; border-radius:4px; padding:9px 12px;
+  min-height:36px; font:inherit; font-size:11px; background:#132334; color:#F4EBD9; cursor:pointer;
+}
+.lp-scroll-cue>span:first-child { visibility:hidden; }
+.lp-motion-toggle:hover { background:#253D5F; border-color:#F3C94F; }
+.lp-stage.is-scrolling .lp-motion-toggle { visibility:hidden; }
+@media(max-width:699px) {
+ .lp-motion-toggle { left:16px; bottom:16px; font-size:10px; padding:8px 10px; }
+ .lp-scroll-cue { justify-content:flex-end; right:16px; bottom:28px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .lp-orbit-enabled .lp-object { transform:none; will-change:auto; }
+ .lp-orbit-enabled .lp-food { left:5%; top:12%; }
+ .lp-orbit-enabled .lp-gate { left:auto; right:3%; top:12%; }
+ .lp-orbit-enabled .lp-map { left:2%; top:73%; }
+ .lp-orbit-enabled .lp-runner { left:auto; right:3%; top:73%; }
+ .lp-motion-toggle { display:none; }
+}
+
+/* More, smaller product objects keep the orbit rich and the centre calm. */
+.lp-orbit-enabled .lp-food { width:145px; }
+.lp-orbit-enabled .lp-food-art { height:115px; }
+.lp-orbit-enabled .lp-food .lp-object-caption { padding:12px; font-size:10px; }
+.lp-orbit-enabled .lp-gate { width:155px; padding:16px; }
+.lp-orbit-enabled .lp-gate h3 { font-size:22px; }
+.lp-orbit-enabled .lp-gate-code { margin-top:16px; }
+.lp-orbit-enabled .lp-gate-number { font-size:42px; margin-top:16px; }
+.lp-orbit-enabled .lp-map { width:190px; }
+.lp-orbit-enabled .lp-map svg { height:145px; }
+.lp-orbit-enabled .lp-runner { width:140px; padding:16px; }
+.lp-orbit-enabled .lp-runner svg { width:90px; height:65px; }
+.lp-orbit-enabled .lp-timing { display:block; width:140px; padding:14px; }
+.lp-orbit-enabled .lp-timing b { font-size:32px; }
+.lp-extra { width:145px; padding:16px; display:flex; flex-direction:column; gap:9px; background:#E8D8B8; }
+.lp-extra svg { width:54px; height:54px; margin:5px auto; }
+.lp-extra>b { font-size:14px; font-weight:500; line-height:1.15; }
+.lp-extra>span:last-child { font-size:9px; line-height:1.5; }
+.lp-passport-orbit { background:#F3EDDC; }
+.lp-capacity-orbit { background:#C5B0FF; }
+.lp-location-orbit { background:#E6B64D; }
+.lp-seal-orbit { background:#B7C69C; }
+.lp-window-orbit { background:#203755; color:#F4EBD9; width:160px; }
+.lp-extra>.lp-extra-number { font-size:64px; letter-spacing:-.06em; }
+.lp-extra>.lp-extra-time { font-size:29px; font-variant-numeric:tabular-nums; line-height:1.25; }
+.lp-extra-time span { color:#F3C94F; }
+.lp-slot-marks { display:flex; gap:4px; margin-top:6px; }
+.lp-slot-marks i { height:13px; flex:1; border:1px solid currentColor; background:#13233418; }
+.lp-window-line { height:3px; background:#F3C94F; margin-top:6px; width:100%; }
+@media(max-width:699px) {
+ .lp-orbit-enabled .lp-food { width:95px; }
+ .lp-orbit-enabled .lp-food-art { height:75px; }
+ .lp-orbit-enabled .lp-food .lp-object-caption { padding:8px; font-size:8px; }
+ .lp-orbit-enabled .lp-gate { width:100px; padding:10px; }
+ .lp-orbit-enabled .lp-gate h3 { font-size:16px; }
+ .lp-orbit-enabled .lp-gate-number { font-size:28px; margin-top:10px; }
+ .lp-orbit-enabled .lp-map { width:115px; }
+ .lp-orbit-enabled .lp-map svg { height:85px; }
+ .lp-orbit-enabled .lp-runner { width:95px; padding:10px; }
+ .lp-orbit-enabled .lp-runner svg { width:65px; height:48px; }
+ .lp-orbit-enabled .lp-timing { width:100px; padding:10px; }
+ .lp-orbit-enabled .lp-timing b { font-size:26px; }
+ .lp-extra { width:100px; padding:10px; gap:6px; }
+ .lp-extra svg { width:36px; height:36px; }
+ .lp-extra>b { font-size:11px; }
+ .lp-extra .lp-corner { font-size:8px; }
+ .lp-extra>span:last-child { font-size:8px; }
+ .lp-extra>.lp-extra-number { font-size:40px; }
+ .lp-extra>.lp-extra-time { font-size:21px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .lp-extra { display:none; }
+ .lp-orbit-enabled .lp-timing { display:none; }
+}
+
+.lp-nav { background:var(--lp-red); }
+@media(min-width:700px) and (max-height:800px) { .lp-hero-copy { top:18%; } }
