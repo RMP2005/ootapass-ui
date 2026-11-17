@@ -1406,8 +1406,20 @@ html[data-surface="workspace"] .lp { display:none; }
  .lp-orbit-enabled .lp-timing { display:none; }
 }
 
-/* Let orbit cards pass through one continuous hero canvas. */
-.lp-nav { background:transparent; }
+/* The navigation has no full-width paint/compositing box over the orbit. */
+.lp-stage { perspective:none; }
+.lp-universe { perspective:1100px; transform:none; }
+.lp-nav { display:contents; }
+.lp-brand { position:absolute; z-index:20; top:28px; left:40px; }
+.lp-nav nav { position:absolute; z-index:20; top:28px; right:40px; }
 .lp-nav nav>a { background:var(--lp-red); }
 .lp-nav nav>a:hover { background:#8C3027; }
 @media(min-width:700px) and (max-height:800px) { .lp-hero-copy { top:18%; } }
+
+@media(max-width:699px) {
+ .lp-brand { top:20px; left:20px; }
+ .lp-nav nav { top:20px; right:20px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .lp-universe { perspective:none; }
+}
