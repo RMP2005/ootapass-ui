@@ -61,11 +61,13 @@
   addEventListener('scroll', schedule, { passive: true });
   addEventListener('resize', schedule);
   preference.addEventListener('change', schedule);
-  document.querySelectorAll('[data-lp-view]').forEach(a => a.addEventListener('click', () => {
-    document.getElementById(`t-${a.dataset.lpView}`)?.click();
-  }));
-  document.querySelector('[data-lp-evidence]')?.addEventListener('click', () => {
-    document.querySelector('[data-open="evidence"]')?.click();
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.documentElement.dataset.surface !== 'workspace') return;
+    const query = new URLSearchParams(location.search);
+    const view = query.get('view');
+    if (['gates', 'trips', 'supply', 'activity'].includes(view)) document.getElementById(`t-${view}`)?.click();
+    if (query.get('evidence') === '1') document.getElementById('evidence')?.showModal();
+    document.title = 'OotaPass · Dispatch workspace';
   });
   render();
 })();
