@@ -85,3 +85,18 @@ Commits were pushed individually: `b343f2b` (separation), `871d8da` (identity an
 ![Separate workspace entry](frontend/separate-landing-desktop.png)
 
 [Mobile landing](frontend/separate-landing-mobile.png) · [Mobile workspace](frontend/separate-workspace-mobile.png)
+
+
+## Top navigation, runner phone and ten-card orbit
+
+The landing hero and navigation now enter `/console/`, the interactive scripted workspace requested for the demonstration. Its live-planner button continues to open `/?workspace=dispatch`, preserving every API-backed operation. Console headings still identify the scripted context.
+
+The three console views are placed across the top at desktop and mobile sizes. Night board uses yellow, Runner app uses lilac, and Plan comparison uses cream. Runner app has a fixed-width iPhone-style titanium frame, a Dynamic Island, side buttons and a home indicator. Its existing pickup, arrival, QR, delivery and replay actions remain unchanged.
+
+The hero has ten original code-native objects: food batch, gate request, route map, runner, deadline, batch passport, receiving capacity, gate location, pickup checklist and pickup window. A slow spatial orbit surrounds the headline. Smaller objects and a wider orbit maintain central reading space. The pause control freezes motion; reduced-motion disables the orbit. The animation stops when offscreen, while the tab is hidden, and after entering the scroll story. Only the deadline card uses restrained translucency. No Cosmos assets were copied.
+
+Verification: all seven original tests and isolated API smoke pass. Browser verified the complete runner pickup → arrival → QR → delivery → replay flow, all three top navigation views, the main hero entry into `/console/`, ten rendered orbit objects, pause stability and resume. Desktop and mobile screenshots saved; checked 375/768/1024/1440px layouts. A 15px tablet overflow from the titlebar link was found and fixed; settled tablet check is now zero. Mobile orbit check at 390px showed seven visible objects, ten total, with zero overflow. No captured browser warnings/errors in final checked states. Python, API contracts, algorithms, dependencies, tests and benchmark inputs/results remain unchanged.
+
+![Runner app phone](frontend/iphone-runner-desktop.png)
+
+[Ten-card hero](frontend/ten-card-orbit-desktop.png) · [Mobile hero](frontend/ten-card-orbit-mobile.png) · [Mobile phone](frontend/iphone-runner-mobile.png) · [Top navigation Night board](frontend/top-navigation-nightboard.png)
