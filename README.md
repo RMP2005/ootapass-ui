@@ -7,7 +7,7 @@
 > **Team C1CORE**, BMS Institute of Technology and Management, Bengaluru · Rewired 2026 ("The Invisible City"), online round
 > **All data in this prototype is synthetic.** Donor names, quantities and requests are invented for testing.
 
-![OotaPass introduction](docs/frontend/landing-hero-desktop.png)
+![OotaPass introduction](docs/frontend/separate-landing-desktop.png)
 
 ---
 
@@ -63,7 +63,7 @@ Then open:
 
 | URL | What it is |
 |---|---|
-| <http://127.0.0.1:5000/> | **Project introduction and working prototype.** Scroll through the meal journey, or jump to `/#dispatch` for the live planner, backed by the Flask API and SQLite. Add requests and donations, cancel donors, check batches, open food passports. |
+| <http://127.0.0.1:5000/> | **Project introduction and working prototype.** Scroll through the meal journey, or use **Enter the dispatch workspace** (`/?workspace=dispatch`) for the separate live planner, backed by the Flask API and SQLite. Add requests and donations, cancel donors, check batches, open food passports. |
 | <http://127.0.0.1:5000/console/> | **Night console (visual demo).** A redesigned night-operations view of the same demo night: Night board, Runner app and Plan comparison. This screen is a scripted front-end walkthrough and is not yet wired to the live API. |
 
 **Reset demo** restores the demo night at any time. Map tiles load from OpenStreetMap / Esri, so the map needs internet. Everything else works offline.

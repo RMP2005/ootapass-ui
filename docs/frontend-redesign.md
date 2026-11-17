@@ -54,7 +54,7 @@ python3 -m venv .venv
 .venv/bin/python -m flask --app app run --port 5055
 ```
 
-Open `http://127.0.0.1:5055/console/` for the redesigned walkthrough, or `http://127.0.0.1:5055/` for the landing experience and `http://127.0.0.1:5055/#dispatch` for the working planner. To isolate QA data, prefix the command with `OOTAPASS_DB=/tmp/ootapass-qa.db`.
+Open `http://127.0.0.1:5055/console/` for the redesigned walkthrough, or `http://127.0.0.1:5055/` for the landing experience and `http://127.0.0.1:5055/?workspace=dispatch` for the working planner. To isolate QA data, prefix the command with `OOTAPASS_DB=/tmp/ootapass-qa.db`.
 
 
 ## Landing experience
@@ -63,10 +63,25 @@ The root page now opens with an editorial introduction before the existing worki
 
 Unslop informed the audit and removal of generic dashboard treatment; UI UX Pro Max informed typography, contrast, responsive layout and motion restraint; Open Design's craft and hierarchy references informed the editorial sections and native interaction states. The existing skill credits and licences above still apply. No runtime dependencies were added.
 
-Feature links select the existing supply, trips and activity tabs; the evidence link opens the existing modal. The planner remains at `/#dispatch`, and `/console/` remains the separate scripted walkthrough. Every existing operation stays available. The reduced-motion layout removes the scroll camera and presents a static hero followed by the same explanatory sections. Hidden camera controls are removed from keyboard focus with `inert`.
+Feature links open the separate workspace with the existing supply, trips and activity tabs selected; the evidence link opens its existing modal. The planner is entered at `/?workspace=dispatch`, and `/console/` remains the separate scripted walkthrough. Every existing operation stays available. The reduced-motion layout removes the scroll camera and presents a static hero followed by the same explanatory sections. Hidden camera controls are removed from keyboard focus with `inert`.
 
 Landing verification: rendered at desktop and mobile widths; zero horizontal page overflow at 375, 768, 1024 and 1440px. Checked all chapter anchors, the mobile zoom framing, planner entry, supply/trip links, evidence modal and Escape. No captured browser warnings/errors. The original 7 tests and isolated API smoke pass again; backend/test/benchmark files remain byte-identical to baseline. Reduced-motion rules were inspected, not OS-emulated.
 
 ![Landing hero](frontend/landing-hero-desktop.png)
 
 [Mobile hero](frontend/landing-hero-mobile.png) · [Mobile camera chapter](frontend/landing-scroll-mobile.png) · [Surplus section](frontend/landing-food-section.png)
+
+
+## Separate workspace and interaction refinement
+
+The story no longer reveals the planner through scrolling. A highlighted yellow entry button in the hero and navigation opens `/?workspace=dispatch`; the landing ends with global food-waste facts, sourced to UNEP's Food Waste Index Report 2024 and explicitly dated to 2022. The source distinguishes waste including inedible parts from recoverable surplus and makes no OotaPass impact claim. Legacy `/#dispatch` and `/#panel` links still enter the workspace. This separation uses frontend presentation only; the Flask routes and API remain unchanged.
+
+The workspace keeps navy and yellow, with restrained cobalt accents replacing teal in statuses, map routes and the scripted console. Navigation, feature links and trip controls have visible borders/backgrounds. A single local yellow ring-and-dot SVG is used on the landing, workspace, console, printed passport and favicons.
+
+Reverification: all 7 original tests and the isolated API smoke pass. Browser checks cover separate hero entry, direct supply entry, request modal/Escape, console view switching and console-to-workspace entry. Landing and workspace overflow checks passed at 375/768/1024/1440px; console mobile overflow introduced by the boxed titlebar link was observed and fixed, then rechecked at 375px (tablet/desktop checks also passed). No captured warnings/errors in the checked browser states. Backend/tests/dependencies/benchmark files remain unchanged.
+
+Commits were pushed individually: `b343f2b` (separation), `871d8da` (identity and affordances), `40db06f` (mobile control fix).
+
+![Separate workspace entry](frontend/separate-landing-desktop.png)
+
+[Mobile landing](frontend/separate-landing-mobile.png) · [Mobile workspace](frontend/separate-workspace-mobile.png)
