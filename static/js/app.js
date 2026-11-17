@@ -6,6 +6,8 @@
 
   const NIGHT_END = 240;              // 00:00, in minutes after 20:00
   const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const REASON_LABEL = { food: "Food", transport: "Transport", time: "Time", "receiving capacity": "Receiving capacity" };
+  const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
   const REASON_TEXT = {
     "food": "not enough suitable food in time",
     "transport": "every runner is busy or too far away",
@@ -73,7 +75,11 @@
   function renderStatus() {
     const { summary, baseline } = state.night;
     const short = summary.unmet;
-    $("#headline").textContent = `${summary.planned} of ${summary.requested} meals reach the gates tonight.`;
+    $("#coverage").textContent = `${summary.planned} / ${summary.requested}`;
+    const uncovered = summary.requested - summary.planned;
+    $("#shortfall-count").textContent = uncovered;
+    $(".shortfall-readout").classList.toggle("uncovered", uncovered > 0);
+    $("#headline").textContent = `${summary.planned} of ${summary.requested} meals planned for tonight`;
     if (!short.length) {
       $("#subline").textContent = "Every gate request is covered by the current plan.";
       $("#alertline").hidden = true;
@@ -82,11 +88,11 @@
         `${gateShort(u.gate)} is ${u.portions} short because ${REASON_TEXT[u.reason]}.`).join(" ");
       const alert = $("#alertline");
       alert.hidden = false;
-      alert.textContent = `Alert sent to partners: ${short.map((u) => u.alert).join("; ")}`;
+      alert.textContent = `Generated partner alert: ${short.map((u) => u.alert).join("; ")}`;
     }
     const max = Math.max(summary.requested, 1);
     $("#compare").innerHTML = `
-      <p class="compare-title">Same night, simple nearest-first method</p>
+      <p class="compare-title">Plan comparison · Same night, same inputs</p>
       <div class="bar-row ours"><span class="name">OotaPass</span>
         <span class="track"><span class="fill" style="width:${(summary.planned / max) * 100}%"></span></span>
         <span class="val">${summary.planned}/${summary.requested}</span></div>
@@ -160,6 +166,7 @@
 
   function placeNowline() {
     const axis = $("#axis");
+    if (!state.night) return;
     const x = axis.offsetLeft + (state.t / NIGHT_END) * axis.clientWidth;
     $("#nowline").style.left = `${x - 1}px`;
     axis.setAttribute("aria-valuenow", Math.round(state.t));
@@ -167,7 +174,7 @@
     $("#clock").textContent = clock(state.t);
     document.querySelectorAll("[data-clock]").forEach((n) => (n.textContent = clock(state.t)));
     const delivered = state.night.trips.filter((x) => x.arrive <= state.t).reduce((s, x) => s + x.portions, 0);
-    $("#delivered").innerHTML = `Delivered by ${clock(state.t)}: <strong>${delivered}</strong> of ${state.night.summary.planned} planned`;
+    $("#delivered").innerHTML = `Simulated arrivals by ${clock(state.t)}: <strong>${delivered}</strong> of ${state.night.summary.planned} planned`;
     document.querySelectorAll(".trip-bar").forEach((b) => {
       const trip = state.night.trips.find((x) => x.id === b.dataset.trip);
       if (trip) b.classList.toggle("done", state.t >= trip.arrive);
@@ -227,6 +234,7 @@
 
   // ------------------------------------------------------------------ map
 
+  let passportTrigger = null;
   let map, layers = {}, runnerMarkers = {}, routeLines = {};
 
   function initMap() {
@@ -241,6 +249,7 @@
     layers.runners = L.layerGroup().addTo(map);
     // Keep every place in view when the layout around the map changes size.
     new ResizeObserver(() => {
+      if (!document.getElementById("map").clientWidth) return;
       map.invalidateSize();
       if (map._bounds?.length) map.fitBounds(map._bounds, { padding: [48, 48] });
     }).observe(document.getElementById("map"));
@@ -257,7 +266,7 @@
 
     for (const trip of trips) {
       const approach = L.polyline([trip.from, trip.donor_loc], { color: "#7A8496", weight: 2, dashArray: "2 6", opacity: 0.8 });
-      const carry = L.polyline([trip.donor_loc, trip.gate_loc], { color: "#24316B", weight: 3.5, dashArray: "8 7", opacity: 0.9 });
+      const carry = L.polyline([trip.donor_loc, trip.gate_loc], { color: "#E2A11B", weight: 3.5, dashArray: "8 7", opacity: 0.9 });
       carry.on("mouseover", () => highlight(trip.id)).on("mouseout", () => highlight(null)).on("click", () => openPassport(trip.id));
       layers.routes.addLayer(approach).addLayer(carry);
       routeLines[trip.id] = carry;
@@ -267,7 +276,7 @@
     const usedGates = new Set(entities.filter((e) => e.kind === "request").map((e) => e.data.gate));
     for (const g of usedGates) {
       const h = hospitals[g];
-      const m = L.marker(h.loc, { icon: L.divIcon({ className: "", html: `<div class="m-gate${shortGates.has(g) ? " short" : ""}">${h.short[0]}</div>`, iconSize: [32, 32], iconAnchor: [16, 16] }) });
+      const m = L.marker(h.loc, { icon: L.divIcon({ className: "", html: `<div class="m-gate${shortGates.has(g) ? " short" : ""}"><span aria-hidden="true">${h.short[0]}</span><span class="sr-only">${esc(h.name)}</span></div>`, iconSize: [32, 32], iconAnchor: [16, 16] }) });
       m.bindTooltip(h.name, { direction: "top", offset: [0, -14] });
       layers.places.addLayer(m);
       bounds.push(h.loc);
@@ -275,7 +284,7 @@
     for (const e of entities.filter((x) => x.kind === "donor")) {
       const off = e.cancelled_at !== null && e.cancelled_at !== undefined;
       const letter = state.night.kinds[e.data.kind][0];
-      const m = L.marker(areas[e.data.area], { icon: L.divIcon({ className: "", html: `<div class="m-donor${off ? " off" : ""}">${letter}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) });
+      const m = L.marker(areas[e.data.area], { icon: L.divIcon({ className: "", html: `<div class="m-donor${off ? " off" : ""}"><span aria-hidden="true">${letter}</span><span class="sr-only">${esc(e.data.name)}: ${e.data.portions} meals</span></div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) });
       m.bindTooltip(`${esc(e.data.name)}: ${e.data.portions} meals of ${esc(e.data.item.toLowerCase())}${off ? " (cancelled)" : ""}`, { direction: "top", offset: [0, -12] });
       layers.places.addLayer(m);
       bounds.push(areas[e.data.area]);
@@ -319,7 +328,7 @@
       const line = routeLines[trip.id];
       if (!line) continue;
       const done = state.t >= trip.arrive;
-      line.setStyle(done ? { color: "#2E7D5A", dashArray: null, opacity: 0.45 } : { color: "#24316B", dashArray: "8 7", opacity: 0.9 });
+      line.setStyle(done ? { color: "#8AAEFF", dashArray: null, opacity: 0.45 } : { color: "#E2A11B", dashArray: "8 7", opacity: 0.9 });
     }
   }
 
@@ -339,35 +348,34 @@
     const root = $("#tab-gates");
     root.innerHTML = "";
     const requests = state.night.entities.filter((e) => e.kind === "request").sort((a, b) => a.data.need_by - b.data.need_by);
-    root.append(el("p", { class: "section-title" }, "Most urgent first"));
-    for (const r of requests) {
+    if (!requests.length) root.append(el("p", { class: "empty" }, "No hospital-gate requests yet. Log a request to plan the night."));
+    requests.forEach((r, index) => {
       const d = r.data;
       const trips = state.night.trips.filter((x) => x.request === r.id);
-      const planned = trips.reduce((s, x) => s + x.portions, 0);
-      const delivered = trips.filter((x) => x.arrive <= state.t).reduce((s, x) => s + x.portions, 0);
+      const planned = trips.reduce((sum, x) => sum + x.portions, 0);
+      const delivered = trips.filter((x) => x.arrive <= state.t).reduce((sum, x) => sum + x.portions, 0);
       const unmet = state.night.summary.unmet.filter((u) => u.request === r.id);
-      const shortBy = unmet.reduce((s, u) => s + u.portions, 0);
+      const shortBy = unmet.reduce((sum, u) => sum + u.portions, 0);
       const pct = (n) => (n / Math.max(d.portions, 1)) * 100;
-      const row = el("div", { class: "gate-row" });
+      const row = el("article", { class: `gate-row${shortBy ? " has-shortfall" : ""}` });
       row.innerHTML = `
-        <h3>${esc(gateName(d.gate))}</h3>
-        <p class="need">${d.portions} meals, ${d.veg_only ? "vegetarian only" : "any food"}, needed by ${clock(d.need_by)}</p>
-        <div class="meter" role="img" aria-label="${delivered} delivered, ${planned} planned, ${shortBy} short of ${d.portions}">
-          <i class="m-delivered" style="width:${pct(delivered)}%"></i>
-          <i class="m-planned" style="width:${pct(planned - delivered)}%"></i>
-          <i class="m-short" style="width:${pct(shortBy)}%"></i>
-        </div>
-        <p class="facts"><b>${planned}</b> planned on ${trips.length} trip${trips.length === 1 ? "" : "s"}, <b>${delivered}</b> delivered by ${clock(state.t)}</p>
-        ${unmet.map((u) => `<span class="reason">${u.portions} short: ${REASON_TEXT[u.reason]}<small>Alert sent: ${esc(u.alert)}</small></span>`).join("")}`;
+        <div class="gate-index">${String(index + 1).padStart(2, "0")}</div>
+        <div class="gate-content"><div class="gate-heading"><div><h3>${esc(gateName(d.gate))}</h3><p class="need">${d.veg_only ? "Vegetarian only" : "Any food"} · Receives up to ${d.capacity} meals</p></div><span class="gate-deadline">${icon("clock")}By ${clock(d.need_by)}</span></div>
+        <div class="gate-allocation"><div><strong>${planned}<span> / ${d.portions}</span></strong><span>meals allocated</span></div><span class="allocation-status${shortBy ? " short" : ""}">${shortBy ? `${shortBy} uncovered` : "Fully planned"}</span></div>
+        <div class="meter" role="img" aria-label="${delivered} simulated arrivals, ${planned} planned, ${shortBy} short of ${d.portions}"><i class="m-delivered" style="width:${pct(delivered)}%"></i><i class="m-planned" style="width:${pct(planned - delivered)}%"></i><i class="m-short" style="width:${pct(shortBy)}%"></i></div>
+        <p class="facts">${trips.length} planned trip${trips.length === 1 ? "" : "s"} <span>·</span> ${delivered} simulated arrivals by ${clock(state.t)}</p>
+        ${unmet.map((u) => `<div class="reason"><b>${REASON_LABEL[u.reason]} · ${u.portions} meals short</b><span>${REASON_TEXT[u.reason]}</span><small>Generated alert: ${esc(u.alert)}</small></div>`).join("")}
+        <div class="gate-dispatches" aria-label="Trips to ${esc(gateShort(d.gate))}"></div></div>`;
+      for (const trip of trips) row.querySelector(".gate-dispatches").append(el("button", { class: "gate-trip", onclick: () => openPassport(trip.id) }, `${icon("route")}<span>${esc(runnerName(trip.runner))} · ${trip.portions} meals</span><span>${clock(trip.arrive)} ${icon("arrow")}</span>`));
       root.append(row);
-    }
+    });
   }
 
   // ------------------------------------------------------------------ panel: trips
 
   function tripPill(trip) {
-    if (state.t >= trip.arrive) return '<span class="pill done">Delivered</span>';
-    if (state.t >= trip.depart) return '<span class="pill moving">On the way</span>';
+    if (state.t >= trip.arrive) return '<span class="pill done">Arrived · Sim.</span>';
+    if (state.t >= trip.depart) return '<span class="pill moving">Moving · Sim.</span>';
     if (trip.check?.decision === "accepted") return '<span class="pill accepted">Checked</span>';
     return '<span class="pill planned">Planned</span>';
   }
@@ -376,20 +384,19 @@
     const root = $("#tab-trips");
     root.innerHTML = "";
     if (!state.night.trips.length) {
-      root.append(el("p", { class: "empty" }, "No trips are possible yet. Log surplus food or a runner to start a plan."));
+      root.append(el("p", { class: "empty" }, "No feasible trips in the current plan. Check gate shortfall reasons and available surplus or runners."));
       return;
     }
-    root.append(el("p", { class: "section-title" }, "By pickup time. Open a trip to see its food passport."));
+    root.append(el("div", { class: "trip-table-heading", "aria-hidden": "true" }, "<span>Pickup / arrival</span><span>Food, route &amp; runner</span><span>Plan status</span>"));
     for (const trip of state.night.trips) {
       const donor = entity(trip.donor).data;
       const row = el("button", {
         class: "trip-row", "data-trip": trip.id,
         onclick: () => openPassport(trip.id), onmouseenter: () => highlight(trip.id), onmouseleave: () => highlight(null),
       }, `
-        <span class="times">${clock(trip.pickup)}<span>arrives ${clock(trip.arrive)}</span></span>
-        <span><span class="what">${trip.portions} meals of ${esc(trip.item.toLowerCase())}</span>
-          <span class="route" style="display:block">${esc(donor.name)} to ${esc(gateShort(trip.gate))}, ${esc(runnerName(trip.runner))}</span></span>
-        <span data-pill>${tripPill(trip)}</span>`);
+        <span class="times">${clock(trip.pickup)}<span>→ ${clock(trip.arrive)}</span></span>
+        <span class="trip-content"><span class="what">${trip.portions} meals of ${esc(trip.item.toLowerCase())}</span><span class="route">${esc(donor.name)} ${icon("arrow")} ${esc(gateShort(trip.gate))}</span><span class="runner-meta">${esc(runnerName(trip.runner))} · Food passport ${trip.id}</span></span>
+        <span class="trip-status" data-pill>${tripPill(trip)}<span class="open-passport">Open passport ↗</span></span>`);
       root.append(row);
     }
   }
@@ -397,7 +404,7 @@
   function updateTripPills() {
     document.querySelectorAll(".trip-row").forEach((row) => {
       const trip = state.night.trips.find((x) => x.id === row.dataset.trip);
-      if (trip) row.querySelector("[data-pill]").innerHTML = tripPill(trip);
+      if (trip) row.querySelector("[data-pill]").innerHTML = tripPill(trip) + '<span class="open-passport">Open passport ↗</span>';
     });
     if (state.tab === "gates") renderGates();
   }
@@ -409,30 +416,31 @@
     root.innerHTML = "";
     const donors = state.night.entities.filter((e) => e.kind === "donor");
     const runners = state.night.entities.filter((e) => e.kind === "runner");
-    root.append(el("p", { class: "section-title" }, "Surplus logged tonight"));
+    root.append(el("div", { class: "section-title supply-section" }, `${icon("food")}<div><h3>Food batches</h3><p>Donor-declared availability and use-by times</p></div>`));
     for (const e of donors) {
       const d = e.data;
       const used = state.night.trips.filter((x) => x.donor === e.id).reduce((s, x) => s + x.portions, 0);
       const off = e.cancelled_at !== null && e.cancelled_at !== undefined;
       const row = el("div", { class: `supply-row${off ? " off" : ""}` });
       row.innerHTML = `
-        <div>
+        <div class="supply-detail">
           <h3>${esc(d.name)}<span class="tag ${d.veg ? "veg" : "nonveg"}">${d.veg ? "Veg" : "Non-veg"}</span></h3>
-          <p class="meta">${esc(state.night.kinds[d.kind])} in ${esc(d.area)}. ${d.portions} meals of ${esc(d.item.toLowerCase())}, ready ${clock(d.ready)}, use by ${clock(d.last_use)}.</p>
-          <p class="meta">${used} of ${d.portions} meals in tonight's plan.</p>
+          <p class="meta">${esc(state.night.kinds[d.kind])} · ${esc(d.area)}</p>
+          <p class="food-description">${d.portions} meals of ${esc(d.item.toLowerCase())}</p>
+          <dl class="supply-facts"><div><dt>Ready</dt><dd>${clock(d.ready)}</dd></div><div><dt>Use by</dt><dd>${clock(d.last_use)}</dd></div><div><dt>Allocated</dt><dd>${used} / ${d.portions}</dd></div></dl>
           ${off ? `<p class="off-note">Cancelled at ${clock(e.cancelled_at)}</p>` : ""}
         </div>`;
       if (!off) row.append(cancelControl(e, "Cancel donation", () => `Cancel at ${clock(state.t)}?`));
       root.append(row);
     }
-    root.append(el("p", { class: "section-title" }, "Runners from the partner NGO"));
+    root.append(el("div", { class: "section-title supply-section" }, `${icon("route")}<div><h3>NGO runners</h3><p>Carrying capacity and tonight’s assignments</p></div>`));
     for (const e of runners) {
       const d = e.data;
       const count = state.night.trips.filter((x) => x.runner === e.id).length;
       const off = e.cancelled_at !== null && e.cancelled_at !== undefined;
       const row = el("div", { class: `supply-row${off ? " off" : ""}` });
       row.innerHTML = `
-        <div>
+        <div class="supply-detail">
           <h3>${esc(d.name)}</h3>
           <p class="meta">Starts in ${esc(d.area)}, carries up to ${d.capacity} meals, ${count} trip${count === 1 ? "" : "s"} tonight.</p>
           ${off ? `<p class="off-note">Dropped out at ${clock(e.cancelled_at)}</p>` : ""}
@@ -478,7 +486,7 @@
       const row = el("div", { class: `act ${a.kind}` });
       row.innerHTML = `<time>${clock(a.t)}</time><div><p>${esc(a.text)}</p>
         ${a.result ? `<p class="result">Re-planned: ${esc(a.result)}</p>` : ""}
-        ${(a.alerts || []).map((x) => `<p class="alert">Alert: ${esc(x)}</p>`).join("")}</div>`;
+        ${(a.alerts || []).map((x) => `<p class="alert">Generated alert: ${esc(x)}</p>`).join("")}</div>`;
       root.append(row);
     }
   }
@@ -496,19 +504,24 @@
       });
       state.tab = tab.id.slice(2);
       closePassport();
+      $("#app-shell").dataset.view = state.tab;
+      const copy = { gates: ["Night board", "Receiving tonight", "Hospital gates", "Ordered by deadline"], trips: ["Dispatch trips", "Moving food", "Tonight’s dispatch manifest", "By pickup time · Open a trip for its passport"], supply: ["Food & runners", "Available tonight", "Food batches & carrying capacity", "Donor declarations · NGO runners"], activity: ["Activity log", "Changes to the plan", "The night’s decision trail", "Requests, cancellations & pickup checks"] }[state.tab];
+      ["view-title", "panel-kicker", "panel-title", "panel-note"].forEach((id, i) => $("#" + id).textContent = copy[i]);
     };
     tabs.forEach((t, i) => {
       t.addEventListener("click", () => select(t));
       t.addEventListener("keydown", (e) => {
-        const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-        if (dir) { const n = tabs[(i + dir + tabs.length) % tabs.length]; select(n); n.focus(); }
+        const dir = ["ArrowRight", "ArrowDown"].includes(e.key) ? 1 : ["ArrowLeft", "ArrowUp"].includes(e.key) ? -1 : 0;
+        if (dir) { e.preventDefault(); const n = tabs[(i + dir + tabs.length) % tabs.length]; select(n); n.focus(); }
       });
     });
   }
 
   function updateTabCounts() {
-    const set = (id, n) => { const t = $(id); t.innerHTML = `${t.textContent.replace(/\d+$/, "").trim()}<span class="count">${n}</span>`; };
+    const set = (id, n) => $(id).querySelector(".count").textContent = n;
+    set("#t-gates", state.night.entities.filter((e) => e.kind === "request").length);
     set("#t-trips", state.night.trips.length);
+    set("#t-supply", state.night.entities.filter((e) => e.kind === "donor").length);
     set("#t-activity", state.night.activity.length);
   }
 
@@ -517,6 +530,7 @@
   function openPassport(id) {
     const trip = state.night.trips.find((x) => x.id === id);
     if (!trip) return;
+    if (!state.openTrip) passportTrigger = document.activeElement;
     state.openTrip = id;
     const donor = entity(trip.donor).data;
     const check = trip.check;
@@ -525,18 +539,18 @@
     const delivered = state.t >= trip.arrive;
     const body = $("#drawer-body");
     body.innerHTML = `
-      <div class="pp-top">
+      <div class="pp-top passport-paper">
         <div>
-          <h2 id="pp-title">${trip.portions} meals of ${esc(trip.item.toLowerCase())}</h2>
+          <p class="passport-batch">Batch · ${esc(trip.id)}</p><h2 id="pp-title">${trip.portions} meals of ${esc(trip.item.toLowerCase())}</h2>
           <p class="sub">${esc(donor.name)} to ${esc(gateName(trip.gate))}</p>
         </div>
-        <figure class="qr"><img src="/api/qr/${trip.id}.svg" alt="QR code linking to this food passport"><figcaption>Scan at pickup and handover</figcaption></figure>
+        <figure class="qr"><img width="112" height="112" src="/api/qr/${trip.id}.svg" alt="QR code linking to this food passport"><figcaption>Food passport QR</figcaption></figure>
       </div>
       <table class="fields">
         <tr><th>Food</th><td>${esc(donor.item)}</td></tr>
         <tr><th>Source</th><td>${esc(donor.name)}, ${esc(kind.toLowerCase())} in ${esc(donor.area)}</td></tr>
         <tr><th>Ready at</th><td>${clock(donor.ready)}</td></tr>
-        <tr><th>Use by (declared by donor)</th><td>${clock(donor.last_use)}</td></tr>
+        <tr class="useby-field"><th>Use by (declared by donor)</th><td>${clock(donor.last_use)}</td></tr>
         <tr><th>Food type</th><td>${donor.veg ? "Vegetarian" : "Non-vegetarian"}</td></tr>
         <tr><th>Meals in this batch</th><td>${trip.portions}</td></tr>
         <tr><th>Carried by</th><td>${esc(runnerName(trip.runner))}</td></tr>
@@ -545,8 +559,8 @@
         <li class="done"><b>Logged by donor</b><span>${donor.portions} meals offered, ready ${clock(donor.ready)}</span></li>
         <li class="${check?.decision === "accepted" ? "done" : ""}"><b>Pickup check by the NGO at ${clock(trip.pickup)}</b>
           <span>${check?.decision === "accepted" ? "Accepted" : "Waiting for the runner's check"}</span></li>
-        <li class="${delivered ? "done" : ""}"><b>Handover at ${esc(gateShort(trip.gate))} at ${clock(trip.arrive)}</b>
-          <span>${delivered ? "Delivered" : picked ? "On the way" : "Planned"}</span></li>
+        <li class="${delivered ? "done" : ""}"><b>Planned handover · ${esc(gateShort(trip.gate))} at ${clock(trip.arrive)}</b>
+          <span>${delivered ? "Arrived in simulation; not a delivery confirmation" : picked ? "Moving in simulation" : "Planned; not yet simulated"}</span></li>
       </ol>
       ${check?.decision === "accepted"
         ? `<p class="decision accepted">The NGO accepted this batch at the pickup check.</p>`
@@ -565,6 +579,8 @@
       <a class="print-link" href="/passport/${trip.id}" target="_blank" rel="noopener">Open printable label</a>`;
     const drawer = $("#drawer");
     drawer.hidden = false;
+    if (!drawer.open) drawer.showModal();
+    $(".tabpanels").inert = true;
     highlight(id);
     const boxes = [...body.querySelectorAll(".checklist input")];
     const accept = $("#pp-accept", body);
@@ -577,18 +593,24 @@
       if (await change(`/api/trips/${trip.id}/check`, { decision: "rejected", items: items() },
         (s) => `Batch rejected and removed. Re-planned: ${s.planned} of ${s.requested} meals now reach the gates.`)) closePassport();
     });
-    $("#drawer-close").focus();
+    $("#drawer-close").focus({ preventScroll: true });
+
   }
 
   function closePassport() {
+    $("#drawer").close();
     $("#drawer").hidden = true;
+    $(".tabpanels").inert = false;
     state.openTrip = null;
+    if (passportTrigger?.isConnected) passportTrigger.focus({ preventScroll: true });
+    passportTrigger = null;
     highlight(null);
   }
 
   // ------------------------------------------------------------------ dialogs
 
   function bindDialogs() {
+    document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => b.closest("dialog").close()));
     document.querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => {
       const d = $(`#${b.dataset.open}`);
       if (d.id === "evidence") renderEvidence();
@@ -608,6 +630,12 @@
       e.preventDefault();
       const err = form.querySelector(".form-error");
       const fd = new FormData(form);
+      const button = form.querySelector('button[type="submit"]');
+      if (button.disabled) return;
+      const label = button.textContent;
+      button.disabled = true;
+      button.textContent = "Saving and re-planning…";
+      form.setAttribute("aria-busy", "true");
       try {
         state.night = await api(path, { ...build(fd), t: state.t });
         err.hidden = true;
@@ -617,6 +645,11 @@
       } catch (x) {
         err.textContent = x.message;
         err.hidden = false;
+        err.focus();
+      } finally {
+        button.disabled = false;
+        button.textContent = label;
+        form.removeAttribute("aria-busy");
       }
     });
 
@@ -636,7 +669,7 @@
       await change("/api/reset", {}, () => "Demo night reset to 20:30.");
     });
     $("#drawer-close").addEventListener("click", closePassport);
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#drawer").hidden) closePassport(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#drawer").open) { e.preventDefault(); closePassport(); } });
     $("#play").addEventListener("click", () => togglePlay());
     $("#speed").addEventListener("change", (e) => (state.speed = Number(e.target.value)));
   }

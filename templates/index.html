@@ -3,111 +3,66 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OotaPass · Tonight's plan</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2324316B'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%23E2A11B' stroke-width='4'/%3E%3C/svg%3E">
+  <title>OotaPass · Good food. Right place.</title>
+  <meta name="description" content="Connect surplus kitchens, hospital-gate requests and NGO runners into one explainable plan for the night.">
+  <script>document.documentElement.dataset.surface = new URLSearchParams(location.search).has("workspace") || ["#dispatch", "#panel"].includes(location.hash) ? "workspace" : "story";</script>
+  <meta name="theme-color" content="#0A0F1C">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/schibsted-grotesk-latin-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="/static/img/ootapass-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css', v='seamless-scene-2') }}">
 </head>
-<body>
-  <a class="skip" href="#panel">Skip to tonight's gates</a>
-
-  <header class="topbar">
-    <div class="brand">
-      <span class="mark" aria-hidden="true"></span>
-      <span class="wordmark">OotaPass</span>
-      <span class="area">Basavanagudi–Jayanagar, tonight</span>
-      <span class="demo-pill" title="Every donor, gate and quantity in this prototype is invented for testing.">Demo night with synthetic data</span>
-    </div>
-    <nav class="actions" aria-label="Actions">
-      <button class="btn ghost" data-open="evidence">How we tested</button>
-      <button class="btn ghost" id="reset">Reset demo</button>
-      <button class="btn secondary" data-open="request-dialog">Log a request</button>
-      <button class="btn primary" data-open="surplus-dialog">Log surplus</button>
+<body class="dispatch-app">
+<a class="skip" href="/console/">Enter the dispatch workspace</a>
+<svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+<symbol id="i-board" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></symbol>
+<symbol id="i-route" viewBox="0 0 24 24"><circle cx="5" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 5h9a4 4 0 0 1 0 8H8a3 3 0 0 0 0 6h9"/></symbol>
+<symbol id="i-food" viewBox="0 0 24 24"><path d="M3 12h18M5 12a7 7 0 0 1 14 0M12 3v2M4 17h16M7 21h10"/></symbol>
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></symbol>
+</defs></svg>
+{% include "landing.html" %}
+<div id="dispatch" tabindex="-1"></div>
+<div class="app-shell" id="app-shell" data-view="gates">
+  <aside class="rail">
+    <a class="brand" href="/" aria-label="OotaPass night dispatch"><img class="ootapass-mark" src="/static/img/ootapass-mark.svg" width="32" height="32" alt=""><span class="wordmark">OotaPass<span>ಊಟ · Night dispatch</span></span></a>
+    <div class="rail-context"><span class="location-dot" aria-hidden="true"></span> South Bengaluru<span>Basavanagudi–Jayanagar</span></div>
+    <p class="rail-label">Operations</p>
+    <nav class="tabs" role="tablist" aria-label="Tonight" aria-orientation="vertical">
+      <button role="tab" aria-selected="true" aria-controls="tab-gates" id="t-gates"><svg class="icon" aria-hidden="true"><use href="#i-board"/></svg><span class="nav-label">Night board</span><span class="count" id="count-gates"></span></button>
+      <button role="tab" aria-selected="false" aria-controls="tab-trips" id="t-trips" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-route"/></svg><span class="nav-label">Dispatch trips</span><span class="count"></span></button>
+      <button role="tab" aria-selected="false" aria-controls="tab-supply" id="t-supply" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-food"/></svg><span class="nav-label">Food &amp; runners</span><span class="count"></span></button>
+      <button role="tab" aria-selected="false" aria-controls="tab-activity" id="t-activity" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg><span class="nav-label">Activity log</span><span class="count"></span></button>
     </nav>
-  </header>
-
-  <main>
-    <section class="status" aria-live="polite">
-      <div class="status-text">
-        <h1 id="headline">Planning tonight…</h1>
-        <p id="subline"></p>
-        <p id="alertline" class="alertline" hidden></p>
-      </div>
-      <div class="compare" id="compare" aria-label="Comparison with the nearest-first method"></div>
-    </section>
-
-    <section class="night" aria-label="Tonight's timeline">
-      <div class="night-controls">
-        <div class="clock" aria-live="off">
-          <span class="clock-label">Clock</span>
-          <output id="clock">20:30</output>
-        </div>
-        <div class="transport">
-          <button class="icon-btn" id="play" aria-label="Play the night">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6z"/></svg>
-          </button>
-          <select id="speed" aria-label="Playback speed">
-            <option value="1">1 min / ¼ s</option>
-            <option value="4">4× faster</option>
-          </select>
-        </div>
-        <p class="delivered" id="delivered"></p>
-      </div>
-      <div class="ruler" id="ruler">
-        <div class="axis" id="axis" role="slider" tabindex="0" aria-label="Time of night"
-             aria-valuemin="0" aria-valuemax="240" aria-valuenow="30"></div>
-        <div class="lanes" id="lanes"></div>
-        <div class="nowline" id="nowline" aria-hidden="true"></div>
-      </div>
-    </section>
-
-    <section class="workspace">
-      <div class="map-wrap">
-        <div id="map" aria-label="Map of donors, hospital gates and runners"></div>
-        <div class="legend" aria-hidden="true">
-          <span><i class="lg donor"></i>Donor</span>
-          <span><i class="lg gate"></i>Hospital gate</span>
-          <span><i class="lg runner"></i>Runner</span>
-          <span><i class="lg route"></i>Planned route</span>
-        </div>
-      </div>
-
-      <aside class="panel" id="panel">
-        <div class="tabs" role="tablist" aria-label="Tonight">
-          <button role="tab" aria-selected="true" aria-controls="tab-gates" id="t-gates">Gates</button>
-          <button role="tab" aria-selected="false" aria-controls="tab-trips" id="t-trips" tabindex="-1">Trips</button>
-          <button role="tab" aria-selected="false" aria-controls="tab-supply" id="t-supply" tabindex="-1">Supply</button>
-          <button role="tab" aria-selected="false" aria-controls="tab-activity" id="t-activity" tabindex="-1">Activity</button>
-        </div>
-        <div class="tabpanels">
-          <div role="tabpanel" id="tab-gates" aria-labelledby="t-gates"></div>
-          <div role="tabpanel" id="tab-trips" aria-labelledby="t-trips" hidden></div>
-          <div role="tabpanel" id="tab-supply" aria-labelledby="t-supply" hidden></div>
-          <div role="tabpanel" id="tab-activity" aria-labelledby="t-activity" hidden></div>
-        </div>
-
-        <div class="drawer" id="drawer" hidden aria-labelledby="pp-title" role="region">
-          <div class="drawer-head">
-            <p class="drawer-kicker">Food passport</p>
-            <button class="icon-btn" id="drawer-close" aria-label="Close passport">
-              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" fill="none"/></svg>
-            </button>
-          </div>
-          <div class="drawer-body" id="drawer-body"></div>
-        </div>
-      </aside>
-    </section>
-  </main>
-
+    <div class="rail-note"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><p>One night.<br>Every gate accounted for.</p></div>
+    <div class="rail-bottom"><button class="rail-link" data-open="evidence">Planner evidence <span aria-hidden="true">↗</span></button><button class="rail-link" id="reset">Reset demo <span aria-hidden="true">↺</span></button><a class="rail-link" href="/console/">Interactive walkthrough <span aria-hidden="true">↗</span></a><p>Synthetic data · Prototype</p></div>
+  </aside>
+  <div class="app-content">
+    <header class="topbar"><div><p class="breadcrumb">Operations <span>/ Tonight</span></p><h2 id="view-title">Night board</h2></div><nav class="actions" aria-label="Actions"><button class="btn secondary" data-open="request-dialog">Log a request</button><button class="btn primary" data-open="surplus-dialog"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Log surplus</button></nav></header>
+    <main>
+      <section class="status" aria-live="polite"><div class="status-copy"><p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>Tonight’s allocation</p><h2 id="headline">Building the night’s plan…</h2><p id="subline"></p></div><div class="coverage-readout"><span id="coverage">— / —</span><span>meals planned</span></div><div class="shortfall-readout"><span id="shortfall-count">—</span><span>meals uncovered</span></div><p id="alertline" class="alertline" hidden></p></section>
+      <section class="workspace">
+        <section class="panel" id="panel" tabindex="-1" aria-label="Dispatch details"><div class="panel-heading"><div><p class="eyebrow" id="panel-kicker">Receiving tonight</p><h2 id="panel-title">Hospital gates</h2></div><span id="panel-note">Ordered by deadline</span></div><div class="tabpanels"><div role="tabpanel" id="tab-gates" aria-labelledby="t-gates"></div><div role="tabpanel" id="tab-trips" aria-labelledby="t-trips" hidden></div><div role="tabpanel" id="tab-supply" aria-labelledby="t-supply" hidden></div><div role="tabpanel" id="tab-activity" aria-labelledby="t-activity" hidden></div></div></section>
+        <section class="map-wrap" aria-label="Routes"><div class="map-heading"><div><p class="eyebrow">The night, on a map</p><h2>Food to the right gate</h2></div><span class="map-stamp">Bengaluru</span></div><div id="map" aria-label="Map of donors, hospital gates and runners"></div><div class="legend" aria-label="Map legend"><span><i class="lg donor"></i>Food batch</span><span><i class="lg gate"></i>Hospital gate</span><span><i class="lg runner"></i>Runner</span><span><i class="lg route"></i>Planned route</span></div><p class="map-footnote">Approximate locations · Movement is simulated</p></section>
+      </section>
+      <section class="night" aria-label="Tonight's timeline"><div class="night-controls"><p class="eyebrow">Replay the plan</p><div class="clock"><output id="clock">20:30</output><span>20:00–00:00</span></div><div class="transport"><button class="icon-btn" id="play" aria-label="Play the night"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6z"/></svg></button><select id="speed" aria-label="Playback speed"><option value="1">1 min / ¼ s</option><option value="4">4× faster</option></select></div><p id="delivered" class="delivered"></p></div><div class="ruler" id="ruler"><div class="axis" id="axis" role="slider" tabindex="0" aria-label="Time of night" aria-describedby="timeline-help" aria-valuemin="0" aria-valuemax="240" aria-valuenow="30"></div><div class="lanes" id="lanes"></div><p class="timeline-help" id="timeline-help">Select a time or use ← → · Open a route bar for its passport · Red marks deadlines</p><div class="nowline" id="nowline" aria-hidden="true"></div></div></section>
+      <footer class="board-footer"><p>Planned allocations. Simulated arrivals.<br><span>Pickup checks are recorded separately in food passports.</span></p><div class="compare" id="compare" aria-label="Comparison with the nearest-first method"></div></footer>
+    </main>
+  </div>
+</div>
+<dialog class="passport-dialog" id="drawer" hidden aria-labelledby="pp-title"><div class="drawer-head"><div><p class="eyebrow">Batch record</p><span>OotaPass food passport</span></div><button class="icon-btn" id="drawer-close" aria-label="Close passport">×</button></div><div class="drawer-body" id="drawer-body"></div></dialog>
   <!-- Log a request -->
-  <dialog id="request-dialog" class="dialog">
-    <form method="dialog" id="request-form" novalidate>
-      <h2>Log a request from a hospital gate</h2>
+  <dialog id="request-dialog" class="dialog" aria-labelledby="request-title">
+    <form method="dialog" id="request-form" autocomplete="off" novalidate>
+      <h2 id="request-title">Log a hospital-gate request</h2>
       <p class="hint">The gate volunteer gives a rough count. No names, phone numbers or IDs.</p>
-      <label>Hospital gate
+      <fieldset class="form-section"><legend>01 / Receiving gate</legend><label>Hospital gate
         <select name="gate" required></select>
-      </label>
-      <div class="row2">
+      </label></fieldset>
+      <fieldset class="form-section"><legend>02 / Meals &amp; deadline</legend><div class="row2">
         <label>Meals needed
           <input name="portions" type="number" min="1" max="500" value="30" required>
         </label>
@@ -118,22 +73,22 @@
       <label>Gate can receive up to (meals)
         <input name="capacity" type="number" min="1" max="500" placeholder="Same as meals needed">
       </label>
-      <label class="check"><input name="veg_only" type="checkbox"> Vegetarian food only</label>
+      <label class="check"><input name="veg_only" type="checkbox"> Vegetarian food only</label></fieldset>
       <p class="logged-at">Logged at <span data-clock></span></p>
-      <p class="form-error" role="alert" hidden></p>
+      <p class="form-error" role="alert" tabindex="-1" hidden></p>
       <div class="dialog-actions">
-        <button class="btn ghost" value="cancel" formnovalidate>Close</button>
+        <button class="btn ghost" type="button" data-close>Close</button>
         <button class="btn primary" type="submit">Log request and re-plan</button>
       </div>
     </form>
   </dialog>
 
   <!-- Log surplus -->
-  <dialog id="surplus-dialog" class="dialog">
-    <form method="dialog" id="surplus-form" novalidate>
-      <h2>Log surplus food</h2>
+  <dialog id="surplus-dialog" class="dialog" aria-labelledby="surplus-title">
+    <form method="dialog" id="surplus-form" autocomplete="off" novalidate>
+      <h2 id="surplus-title">Log surplus food</h2>
       <p class="hint">The donor declares the use-by time. OotaPass never extends it.</p>
-      <div class="row2">
+      <fieldset class="form-section"><legend>01 / Source</legend><div class="row2">
         <label>Donor name
           <input name="name" type="text" maxlength="60" placeholder="e.g. Restaurant D" required>
         </label>
@@ -141,7 +96,7 @@
           <select name="kind" required></select>
         </label>
       </div>
-      <div class="row2">
+      </fieldset><fieldset class="form-section"><legend>02 / Food &amp; location</legend><div class="row2">
         <label>Area
           <select name="area" required></select>
         </label>
@@ -149,7 +104,7 @@
           <input name="item" type="text" maxlength="60" placeholder="e.g. Curd rice" required>
         </label>
       </div>
-      <div class="row3">
+      </fieldset><fieldset class="form-section"><legend>03 / Quantity &amp; safe-use window</legend><div class="row3">
         <label>Meals
           <input name="portions" type="number" min="1" max="1000" value="40" required>
         </label>
@@ -160,21 +115,21 @@
           <input name="last_use" type="time" value="23:30" required>
         </label>
       </div>
-      <label class="check"><input name="veg" type="checkbox" checked> Vegetarian</label>
+      <label class="check"><input name="veg" type="checkbox" checked> Vegetarian</label></fieldset>
       <p class="logged-at">Logged at <span data-clock></span></p>
-      <p class="form-error" role="alert" hidden></p>
+      <p class="form-error" role="alert" tabindex="-1" hidden></p>
       <div class="dialog-actions">
-        <button class="btn ghost" value="cancel" formnovalidate>Close</button>
+        <button class="btn ghost" type="button" data-close>Close</button>
         <button class="btn primary" type="submit">Log surplus and re-plan</button>
       </div>
     </form>
   </dialog>
 
   <!-- Evidence -->
-  <dialog id="evidence" class="dialog wide">
+  <dialog id="evidence" class="dialog wide" aria-labelledby="evidence-title">
     <div class="evidence">
       <div class="dialog-titlebar">
-        <h2>How we tested the planner</h2>
+        <h2 id="evidence-title">How we tested the planner</h2>
         <form method="dialog"><button class="icon-btn" aria-label="Close">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" fill="none"/></svg>
         </button></form>
@@ -187,5 +142,6 @@
 
   <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
 </body>
 </html>
