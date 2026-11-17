@@ -328,7 +328,7 @@
       const line = routeLines[trip.id];
       if (!line) continue;
       const done = state.t >= trip.arrive;
-      line.setStyle(done ? { color: "#58C6B1", dashArray: null, opacity: 0.45 } : { color: "#E2A11B", dashArray: "8 7", opacity: 0.9 });
+      line.setStyle(done ? { color: "#8AAEFF", dashArray: null, opacity: 0.45 } : { color: "#E2A11B", dashArray: "8 7", opacity: 0.9 });
     }
   }
 

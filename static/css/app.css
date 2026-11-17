@@ -35,8 +35,8 @@
   --night-mid:#A78649;
   --haldi:#E8AD43;
   --haldi-soft:#352C1C;
-  --leaf:#80D2BE;
-  --leaf-soft:#183A32;
+  --leaf:#9DBAFF;
+  --leaf-soft:#1B2D52;
   --kumkum:#F0A298;
   --kumkum-soft:#3C262A;
   --paper:#F2EEE3;
@@ -659,7 +659,7 @@ main {
 
 .allocation-status {
   font-size:11px;
-  color:#2B6752
+  color:#294CA4
 }
 
 .allocation-status.short {
@@ -679,7 +679,7 @@ main {
 }
 
 .m-delivered {
-  background:#226F5E
+  background:#395DC2
 }
 
 .m-planned {
@@ -1373,8 +1373,8 @@ main {
 }
 
 .pill.done {
-  color:#205A47;
-  background:#D9E7DC;
+  color:#294CA4;
+  background:#DCE5FC;
   border-color:#98B4A2
 }
 
@@ -1452,8 +1452,8 @@ main {
 }
 
 .tag.veg {
-  background:#D9E7DC;
-  color:#205A47
+  background:#DCE5FC;
+  color:#294CA4
 }
 
 .tag.nonveg {
@@ -1894,9 +1894,9 @@ main {
 }
 
 .custody li.done:before {
-  background:#285F4C;
+  background:#395DC2;
   color:#fff;
-  border-color:#285F4C
+  border-color:#395DC2
 }
 
 .custody li:after {
@@ -1981,8 +1981,8 @@ main {
 }
 
 .decision.accepted {
-  background:#D9E7DC;
-  color:#205A47;
+  background:#DCE5FC;
+  color:#294CA4;
   padding:16px;
   font-size:14px
 }
@@ -2607,3 +2607,18 @@ main {
   }
 
 }
+
+/* Clear affordances: navy/yellow operations, restrained cobalt status accents. */
+.ootapass-mark { display:inline-block; width:32px; height:32px; flex:none; vertical-align:middle; }
+.rail .tabs button { border:1px solid #4A5D7A; background:#15223A; margin-bottom:8px; border-radius:5px; }
+.rail .tabs button[aria-selected="true"] { border-color:#F3C94F; background:#293853; color:#FFD65A; box-shadow:inset 3px 0 #F3C94F; }
+.rail-link { border:1px solid #4A5D7A; border-radius:4px; background:#17243A; padding:10px 12px; margin-top:8px; }
+.rail-link:hover { background:#233B68; border-color:#8AAEFF; }
+.gate-trip { border:1px solid #8899BD; border-radius:4px; padding:10px; margin-top:8px; background:#E3E8F4; color:#20365E; min-height:40px; }
+.gate-trip:hover { background:#CFDBF8; border-color:#395DC2; text-decoration:none; }
+.trip-row { border:1px solid #8899BD; border-radius:4px; margin-bottom:8px; }
+.dispatch-app .btn.ghost { border:1px solid #7184A4; background:#182742; }
+.dispatch-app .btn:not(:disabled):hover,.dispatch-app .icon-btn:hover { outline:1px solid #8AAEFF; outline-offset:2px; }
+.status-dot,.location-dot { background:#F3C94F; }
+.map-heading { border-top:2px solid #537FE8; }
+@media(max-width:699px) { .rail .tabs button { margin-bottom:0; padding-inline:6px; } .rail-link { min-height:40px; } }

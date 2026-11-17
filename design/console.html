@@ -36,7 +36,7 @@ button{font-family:inherit}
 <div class="demo-shell" style="height:100vh;min-height:420px;display:flex;flex-direction:column;background:#0A0F1C;overflow:hidden">
   <header class="demo-rail" style="height:60px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;min-width:0;border-bottom:1px solid rgba(255,255,255,.07);background:#0C1222;position:relative;z-index:20">
     <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:26px;height:26px;border-radius:50%;border:2px solid #F5A524;display:grid;place-items:center;box-shadow:0 0 14px rgba(245,165,36,.45)"><div style="width:8px;height:8px;border-radius:50%;background:#F5A524"></div></div>
+      <img class="ootapass-mark" src="/static/img/ootapass-mark.svg" width="32" height="32" alt="">
       <div style="font-weight:800;font-size:19px;letter-spacing:-.02em">OotaPass</div>
       <div style="font-family:'Noto Sans Kannada',sans-serif;font-weight:800;font-size:15px;color:#F5A524;padding:1px 8px;border:1px solid rgba(245,165,36,.35);border-radius:6px">ಊಟ</div>
     </div>
@@ -51,7 +51,7 @@ button{font-family:inherit}
   </header>
 
   <main class="demo-main" style="flex:1;min-height:0;position:relative">
-    <div class="demo-titlebar"><div><p>Scripted walkthrough / South Bengaluru</p><h1>Tonight’s food-recovery desk</h1></div><a href="/">Open working app ↗</a></div>
+    <div class="demo-titlebar"><div><p>Scripted walkthrough / South Bengaluru</p><h1>Tonight’s food-recovery desk</h1></div><a href="/?workspace=dispatch">Open working app ↗</a></div>
     <!-- NIGHT BOARD -->
     <div class="demo-board" style="position:absolute;inset:0;display:{{ boardDisplay }};grid-template-columns:minmax(0,1fr) 410px">
       <div class="demo-map" style="position:relative;min-width:0;overflow:hidden">
@@ -65,17 +65,17 @@ button{font-family:inherit}
             <div style="font-size:26px;font-weight:700;color:#8A94A7">/ 140</div>
           </div>
           <div style="font-size:{{ subSize }};font-weight:500;margin-top:4px">meals planned for the gates tonight</div>
-          <div style="display:{{ fullBlock }};margin-top:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><div style="height:100%;width:{{ deliveredPct }};background:#3FD0C9;transition:width .3s"></div></div>
+          <div style="display:{{ fullBlock }};margin-top:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><div style="height:100%;width:{{ deliveredPct }};background:#8AAEFF;transition:width .3s"></div></div>
           <div style="display:{{ fullFlex }};justify-content:space-between;margin-top:7px;font-size:12px;color:#8A94A7"><span>{{ deliveredText }}</span><span style="color:{{ shortColor }};font-weight:600">{{ shortText }}</span></div>
         </div>
 
         <div class="demo-legend" style="position:absolute;left:20px;bottom:118px;z-index:500;display:{{ fullFlex }};gap:16px;font-size:11px;color:#8A94A7;padding:8px 12px;border-radius:8px;background:rgba(12,18,34,.7);backdrop-filter:blur(6px)">
           <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:#F5A524;box-shadow:0 0 8px #F5A524"></div>Donor lot</div>
-          <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;border:2px solid #3FD0C9"></div>Hospital gate</div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;border:2px solid #8AAEFF"></div>Hospital gate</div>
           <div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff"></div>Runner</div>
           <div style="display:flex;align-items:center;gap:6px"><div style="width:18px;border-top:2px dashed rgba(245,165,36,.7)"></div>Planned</div>
           <div style="display:flex;align-items:center;gap:6px"><div style="width:18px;border-top:2px solid #F5A524"></div>Carrying</div>
-          <div style="display:flex;align-items:center;gap:6px"><div style="width:18px;border-top:2px solid rgba(63,208,201,.5)"></div>Delivered</div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:18px;border-top:2px solid rgba(138,174,255,.5)"></div>Delivered</div>
         </div>
 
         <div style="position:absolute;top:18px;left:50%;z-index:700;transform:translate(-50%,{{ toastY }});opacity:{{ toastOp }};transition:transform .45s cubic-bezier(.2,.9,.3,1.2),opacity .3s;pointer-events:none;min-width:380px;max-width:520px;padding:12px 16px;border-radius:12px;background:#121A2E;border:1px solid {{ toastColor }};box-shadow:0 12px 40px rgba(0,0,0,.5)">
@@ -288,14 +288,14 @@ button{font-family:inherit}
     </div>
 
     <!-- RUNNER APP -->
-    <div class="demo-runner" style="position:absolute;inset:0;display:{{ runnerDisplay }};overflow:auto;background:radial-gradient(ellipse at 30% 40%,rgba(63,208,201,.07),transparent 60%),#0A0F1C">
+    <div class="demo-runner" style="position:absolute;inset:0;display:{{ runnerDisplay }};overflow:auto;background:radial-gradient(ellipse at 30% 40%,rgba(138,174,255,.07),transparent 60%),#0A0F1C">
       <div class="demo-runner-layout" style="min-height:100%;display:flex;align-items:center;justify-content:center;gap:56px;padding:28px;flex-wrap:wrap">
         <div class="demo-device" style="width:350px;height:720px;border-radius:48px;padding:10px;background:#1B2236;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 40px 80px rgba(0,0,0,.6);flex:none">
           <div style="position:relative;width:100%;height:100%;border-radius:39px;overflow:hidden;background:#0B1120;display:flex;flex-direction:column">
             <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:700"><span>21:18</span><div style="width:90px;height:24px;border-radius:12px;background:#000"></div><span style="font-size:11px;color:#8A94A7">4G</span></div>
             <div style="padding:6px 20px 12px;display:flex;align-items:center;justify-content:space-between">
               <div><div style="font-size:12px;color:#8A94A7">Runner 2 · shift till 00:00</div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em">Hi, Manjunath</div></div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#3FD0C9;padding:4px 8px;border-radius:999px;background:rgba(63,208,201,.12)"><div style="width:6px;height:6px;border-radius:50%;background:#3FD0C9;animation:oo-blink 1.6s infinite"></div>ON SHIFT</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#8AAEFF;padding:4px 8px;border-radius:999px;background:rgba(138,174,255,.12)"><div style="width:6px;height:6px;border-radius:50%;background:#8AAEFF;animation:oo-blink 1.6s infinite"></div>ON SHIFT</div>
             </div>
             <div style="padding:0 20px;display:flex;gap:6px">
               <sc-for list="{{ rSteps }}" as="rs" hint-placeholder-count="4">
@@ -315,7 +315,7 @@ button{font-family:inherit}
                   <div style="font-size:13px;margin-top:10px;color:#C7CEDB">Chicken rice · use by <b>23:40</b></div>
                 </div>
                 <div style="padding:14px 16px;border-radius:16px;background:#141C30;border:1px solid rgba(255,255,255,.08);display:flex;gap:12px">
-                  <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px"><div style="width:10px;height:10px;border-radius:50%;background:#F5A524"></div><div style="width:2px;flex:1;background:repeating-linear-gradient(180deg,#5E687C 0 4px,transparent 4px 8px);margin:4px 0"></div><div style="width:10px;height:10px;border-radius:50%;border:2px solid #3FD0C9"></div></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px"><div style="width:10px;height:10px;border-radius:50%;background:#F5A524"></div><div style="width:2px;flex:1;background:repeating-linear-gradient(180deg,#5E687C 0 4px,transparent 4px 8px);margin:4px 0"></div><div style="width:10px;height:10px;border-radius:50%;border:2px solid #8AAEFF"></div></div>
                   <div style="display:flex;flex-direction:column;gap:16px;font-size:13px">
                     <div><div style="font-weight:700">Pick up at 21:18</div><div style="color:#8A94A7">Restaurant B</div></div>
                     <div><div style="font-weight:700">Hand over by 21:34</div><div style="color:#8A94A7">NIMHANS gate · 2.6 km · 8 min</div></div>
@@ -332,35 +332,35 @@ button{font-family:inherit}
                   <div style="height:6px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:10px;overflow:hidden"><div style="height:100%;width:{{ rProgW }};background:#F5A524;box-shadow:0 0 10px #F5A524"></div></div>
                   <div style="display:flex;justify-content:space-between;font-size:11px;color:#8A94A7;margin-top:6px"><span>Restaurant B</span><span>NIMHANS</span></div>
                 </div>
-                <div style="padding:14px 16px;border-radius:16px;background:rgba(63,208,201,.08);border:1px solid rgba(63,208,201,.25);font-size:13px;color:#BFEDEA;line-height:1.45">Gate volunteer Shwetha is expecting you. Ask for the gate QR at the east entrance.</div>
+                <div style="padding:14px 16px;border-radius:16px;background:rgba(138,174,255,.08);border:1px solid rgba(138,174,255,.25);font-size:13px;color:#CCD9FF;line-height:1.45">Gate volunteer Shwetha is expecting you. Ask for the gate QR at the east entrance.</div>
                 <div style="flex:1"></div>
                 <button onClick="{{ rArrived }}" disabled="{{ rArriveDisabled }}" style="height:56px;border:0;border-radius:16px;cursor:pointer;background:{{ rArriveBg }};color:{{ rArriveFg }};font-size:17px;font-weight:800;transition:background .3s">Arrived · scan gate QR</button>
               </sc-if>
               <sc-if value="{{ rS2 }}" hint-placeholder-val="{{ false }}">
-                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#3FD0C9">SCAN GATE QR</div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8AAEFF">SCAN GATE QR</div>
                 <div style="position:relative;aspect-ratio:1;border-radius:20px;background:radial-gradient(circle at 50% 50%,#1A2438,#070B15);overflow:hidden">
-                  <div style="position:absolute;left:18%;top:18%;width:22%;height:22%;border-left:3px solid #3FD0C9;border-top:3px solid #3FD0C9;border-radius:8px 0 0 0"></div>
-                  <div style="position:absolute;right:18%;top:18%;width:22%;height:22%;border-right:3px solid #3FD0C9;border-top:3px solid #3FD0C9;border-radius:0 8px 0 0"></div>
-                  <div style="position:absolute;left:18%;bottom:18%;width:22%;height:22%;border-left:3px solid #3FD0C9;border-bottom:3px solid #3FD0C9;border-radius:0 0 0 8px"></div>
-                  <div style="position:absolute;right:18%;bottom:18%;width:22%;height:22%;border-right:3px solid #3FD0C9;border-bottom:3px solid #3FD0C9;border-radius:0 0 8px 0"></div>
+                  <div style="position:absolute;left:18%;top:18%;width:22%;height:22%;border-left:3px solid #8AAEFF;border-top:3px solid #8AAEFF;border-radius:8px 0 0 0"></div>
+                  <div style="position:absolute;right:18%;top:18%;width:22%;height:22%;border-right:3px solid #8AAEFF;border-top:3px solid #8AAEFF;border-radius:0 8px 0 0"></div>
+                  <div style="position:absolute;left:18%;bottom:18%;width:22%;height:22%;border-left:3px solid #8AAEFF;border-bottom:3px solid #8AAEFF;border-radius:0 0 0 8px"></div>
+                  <div style="position:absolute;right:18%;bottom:18%;width:22%;height:22%;border-right:3px solid #8AAEFF;border-bottom:3px solid #8AAEFF;border-radius:0 0 8px 0"></div>
                   {{ scanLine }}
                 </div>
                 <div style="text-align:center;font-size:14px;color:#C7CEDB">Hold steady over the NIMHANS gate code…</div>
               </sc-if>
               <sc-if value="{{ rS3 }}" hint-placeholder-val="{{ false }}">
-                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#3FD0C9">GATE CONFIRMED</div>
-                <div style="padding:18px;border-radius:16px;background:rgba(63,208,201,.1);border:1px solid rgba(63,208,201,.4)">
+                <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8AAEFF">GATE CONFIRMED</div>
+                <div style="padding:18px;border-radius:16px;background:rgba(138,174,255,.1);border:1px solid rgba(138,174,255,.4)">
                   <div style="font-size:22px;font-weight:800">NIMHANS gate</div>
-                  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#8FE3DE;margin-top:4px">G-NIM-02 · volunteer Shwetha</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#AAC4FF;margin-top:4px">G-NIM-02 · volunteer Shwetha</div>
                   <div style="font-size:13px;color:#C7CEDB;margin-top:10px">Batch OP-1116-RB matches this gate. Hand over 20 meals.</div>
                 </div>
                 <div style="flex:1"></div>
-                <button onClick="{{ rDelivered }}" style="height:56px;border:0;border-radius:16px;cursor:pointer;background:#3FD0C9;color:#04201E;font-size:17px;font-weight:800;box-shadow:0 8px 30px rgba(63,208,201,.35)">Delivered</button>
+                <button onClick="{{ rDelivered }}" style="height:56px;border:0;border-radius:16px;cursor:pointer;background:#8AAEFF;color:#101C38;font-size:17px;font-weight:800;box-shadow:0 8px 30px rgba(138,174,255,.35)">Delivered</button>
               </sc-if>
               <sc-if value="{{ rS4 }}" hint-placeholder-val="{{ false }}">
                 <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px">
-                  <div style="width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:rgba(63,208,201,.12);border:2px solid #3FD0C9;box-shadow:0 0 40px rgba(63,208,201,.35)">
-                    <svg width="44" height="44" viewBox="0 0 44 44"><path d="M10 23 L19 32 L35 13" fill="none" stroke="#3FD0C9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  <div style="width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:rgba(138,174,255,.12);border:2px solid #8AAEFF;box-shadow:0 0 40px rgba(138,174,255,.35)">
+                    <svg width="44" height="44" viewBox="0 0 44 44"><path d="M10 23 L19 32 L35 13" fill="none" stroke="#8AAEFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                   </div>
                   <div style="font-size:26px;font-weight:800;letter-spacing:-.02em">20 meals delivered</div>
                   <div style="font-size:14px;color:#8A94A7">NIMHANS gate · 21:33, one minute early</div>
@@ -441,7 +441,7 @@ button{font-family:inherit}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;autoplay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;autoCancel&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;showLabels&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Map&quot;}}">
-const AMBER='#F5A524',TEAL='#3FD0C9',RED='#F0524A',MUTED='#8A94A7';
+const AMBER='#F5A524',BLUE='#8AAEFF',RED='#F0524A',MUTED='#8A94A7';
 const GATES={
   Kidwai:{loc:[12.9377,77.5958],need:40,by:90,veg:false,full:'Kidwai Memorial Institute'},
   Victoria:{loc:[12.9632,77.5745],need:60,by:120,veg:true,full:'Victoria & Vani Vilas'},
@@ -512,7 +512,7 @@ class Component extends DCLogic {
       const had=this._sig.split(',');const now=sig.split(',');
       let toast=null;
       if(had.includes('T3')&&!now.includes('T3'))toast={title:'Bakery C cancelled at '+fmt(s.cancelAt)+' · night re-planned',body:'NIMHANS is now 20 short. Generated demo alert: “20 more meals needed at NIMHANS by 22:30”.',color:RED};
-      else if(now.includes('T6')&&!had.includes('T6'))toast={title:'Shortfall closed · 140 of 140 planned',body:'Supermarket D → NIMHANS via Runner 3, arriving '+fmt(plan.trips.find(x=>x.id==='T6').drop)+'.',color:TEAL};
+      else if(now.includes('T6')&&!had.includes('T6'))toast={title:'Shortfall closed · 140 of 140 planned',body:'Supermarket D → NIMHANS via Runner 3, arriving '+fmt(plan.trips.find(x=>x.id==='T6').drop)+'.',color:BLUE};
       else if(now.includes('T3'))toast={title:'Rewound before the cancellation',body:'Original plan restored: 140 of 140.',color:AMBER};
       if(toast)this.showToast(toast);
       if(!this.dragging){this.setState({replanning:true});clearTimeout(this._rt);this._rt=setTimeout(()=>this.setState({replanning:false}),900);}
@@ -547,7 +547,7 @@ class Component extends DCLogic {
   syncMap(plan){
     const L=window.L,m=this.map;if(!m)return;const s=this.state;plan=plan||buildPlan(s.t,s.cancelAt,s.rescueAt);
     const want={};
-    Object.entries(GATES).forEach(([k,g])=>{const gp=plan.g[k];const short=gp.planned<g.need;const col=short?RED:TEAL;
+    Object.entries(GATES).forEach(([k,g])=>{const gp=plan.g[k];const short=gp.planned<g.need;const col=short?RED:BLUE;
       want['g-'+k]={loc:g.loc,key:k+gp.planned+gp.delivered+short,mk:()=>this.icon('gate',col,k,gp.delivered+' delivered · '+gp.planned+'/'+g.need+' planned',short||gp.delivered<gp.planned,k==='Kidwai'?'below':k==='NIMHANS'?'left':'right'),z:200};});
     Object.entries(DONORS).forEach(([id,d])=>{if(id==='sup-d'&&!plan.rescued&&s.find!=='found')return;
       const cancelled=id==='bake-c'&&plan.cancelled;const col=cancelled?'#5E687C':AMBER;
@@ -570,12 +570,12 @@ class Component extends DCLogic {
   styleRoute(ln){if(ln._st===ln._want)return;ln._st=ln._want;const el=ln.getElement();if(!el)return;el.style.transition='opacity .5s, stroke .5s, stroke-width .3s';
     if(ln._want==='reserved')Object.assign(el.style,{stroke:AMBER,opacity:'.55',strokeDasharray:'2 8',strokeDashoffset:'0',animation:'none',strokeWidth:'2.5',filter:'none'});
     else if(ln._want==='picked')Object.assign(el.style,{stroke:AMBER,opacity:'1',strokeDasharray:'12 7',animation:'oo-flow .8s linear infinite',strokeWidth:'4',filter:'drop-shadow(0 0 5px rgba(245,165,36,.9))'});
-    else Object.assign(el.style,{stroke:TEAL,opacity:'.4',strokeDasharray:'none',animation:'none',strokeWidth:'2.5',filter:'none'});}
+    else Object.assign(el.style,{stroke:BLUE,opacity:'.4',strokeDasharray:'none',animation:'none',strokeWidth:'2.5',filter:'none'});}
   scrubAt(e){const r=this.trackRef.current.getBoundingClientRect();const f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));this.setState({t:f*240});}
   startFind=()=>{this.setState({find:'searching',searchI:0});let i=0;clearInterval(this._si);this._si=setInterval(()=>{i++;this.setState({searchI:i});if(i>=4){clearInterval(this._si);this.setState({find:'found'});}},450);};
   rPicked=()=>{this.addFeed('Picked up 20 × chicken rice at Restaurant B',AMBER);this.setState({rStep:1,rProg:0});const t0=performance.now();clearInterval(this._ri);this._ri=setInterval(()=>{const f=Math.min(1,(performance.now()-t0)/3500);this.setState({rProg:f});if(f>=1)clearInterval(this._ri);},50);};
-  rArrived=()=>{this.setState({rStep:2});setTimeout(()=>{this.addFeed('Gate QR scanned · NIMHANS G-NIM-02',TEAL);this.setState({rStep:3});},2200);};
-  rDelivered=()=>{this.addFeed('Delivered 20 meals at NIMHANS gate · plan updated',TEAL);this.setState({rStep:4});};
+  rArrived=()=>{this.setState({rStep:2});setTimeout(()=>{this.addFeed('Gate QR scanned · NIMHANS G-NIM-02',BLUE);this.setState({rStep:3});},2200);};
+  rDelivered=()=>{this.addFeed('Delivered 20 meals at NIMHANS gate · plan updated',BLUE);this.setState({rStep:4});};
   addFeed(text,color){const times=['21:18','21:31','21:32','21:33'];this.setState(s=>({feed:[...s.feed,{time:times[Math.min(3,s.feed.length-2)],text,color}]}));}
   renderVals(){
     const s=this.state;const t=s.t;const plan=buildPlan(t,s.cancelAt,s.rescueAt);
@@ -584,9 +584,9 @@ class Component extends DCLogic {
     const gates=Object.entries(GATES).sort((a,b)=>a[1].by-b[1].by).map(([k,g])=>{const gp=plan.g[k];const short=gp.planned<g.need;const met=gp.delivered>=g.need;
       const vegN=plan.trips.filter(x=>x.gate===k&&DONORS[x.donor].veg).reduce((a,x)=>a+x.n,0);
       return {name:k,full:g.full,by:fmt(g.by),vegOnly:g.veg,need:g.need,planned:gp.planned,plannedW:(gp.planned/g.need*100)+'%',deliveredW:(gp.delivered/g.need*100)+'%',shortOp:short?1:0,
-        numColor:short?RED:'#E8ECF3',border:short?'rgba(240,82,74,.45)':met?'rgba(63,208,201,.35)':'rgba(255,255,255,.07)',
+        numColor:short?RED:'#E8ECF3',border:short?'rgba(240,82,74,.45)':met?'rgba(138,174,255,.35)':'rgba(255,255,255,.07)',
         status:met?'Met at '+fmt(gp.last):t>g.by?'Deadline passed':short?(g.need-gp.planned)+' short · '+dur(g.by-t)+' left':dur(g.by-t)+' left',
-        statusColor:met?TEAL:short||t>g.by?RED:MUTED,deliveredText:gp.delivered+' delivered',mix:gp.planned?(vegN===gp.planned?'all veg':vegN?vegN+' veg · '+(gp.planned-vegN)+' non-veg':'non-veg'):'no food planned'};});
+        statusColor:met?BLUE:short||t>g.by?RED:MUTED,deliveredText:gp.delivered+' delivered',mix:gp.planned?(vegN===gp.planned?'all veg':vegN?vegN+' veg · '+(gp.planned-vegN)+' non-veg':'non-veg'):'no food planned'};});
     const shortG=Object.entries(GATES).filter(([k,g])=>plan.g[k].planned<g.need);
     const canRescue=s.cancelAt!=null&&rescueTiming(t,s.cancelAt).drop<=150;
     const shortfalls=shortG.map(([k,g])=>({gate:k,short:g.need-plan.g[k].planned,by:fmt(g.by),why:'Bakery C cancelled at '+fmt(s.cancelAt)+'; no other suitable food can reach '+k+' in time.',
@@ -601,19 +601,19 @@ class Component extends DCLogic {
     const runners=['r1','r2','r3'].map((r,i)=>{const {act}=runnerPos(plan.segs[r],HOME[r],t);let a='At base · free';
       if(act){if(act.c){const tr=plan.trips.find(x=>x.runner===r&&x.status==='picked');a=tr?'Carrying '+tr.n+' meals → '+tr.gate+' · ETA '+fmt(tr.drop):'In transit';}else{const tr=plan.trips.find(x=>x.runner===r&&x.status==='reserved');a=tr?'Heading to '+DONORS[tr.donor].name+' · pickup '+fmt(tr.pick):'Returning to base';}}
       return {code:'R'+(i+1),activity:a,bg:act?'#fff':'rgba(255,255,255,.08)',fg:act?'#0A0F1C':MUTED,glow:act?'0 0 12px rgba(255,255,255,.5)':'none'};});
-    const marks=[{left:(90/240*100)+'%',color:TEAL,label:'KID'},{left:(120/240*100)+'%',color:TEAL,label:'VIC'},{left:(150/240*100)+'%',color:TEAL,label:'NIM'}];
+    const marks=[{left:(90/240*100)+'%',color:BLUE,label:'KID'},{left:(120/240*100)+'%',color:BLUE,label:'VIC'},{left:(150/240*100)+'%',color:BLUE,label:'NIM'}];
     if(s.cancelAt!=null)marks.push({left:(s.cancelAt/240*100)+'%',color:RED,label:'CANCEL'});
     if(s.rescueAt!=null)marks.push({left:(s.rescueAt/240*100)+'%',color:AMBER,label:'RESCUE'});
     let pp={};const pid=s.passport||'hall-a';const d=DONORS[pid];
     {const cancelled=pid==='bake-c'&&plan.cancelled;const left=d.last-t;const frac=Math.max(0,Math.min(1,left/(d.last-d.ready)));
       const trips=plan.trips.filter(x=>x.donor===pid).map(tr=>{const order=['reserved','picked','delivered'];const si=order.indexOf(tr.status);
         return {title:tr.id+' · '+tr.n+' meals → '+tr.gate+' · Runner '+tr.runner.slice(1),steps:[['Reserved',''],['Picked up',fmt(tr.pick)],['Delivered',fmt(tr.drop)]].map(([l,tm],i)=>({label:l,time:i===0?'by plan':(i<=si?'':'due ')+tm,
-          bg:i<si?'rgba(63,208,201,.1)':i===si?'rgba(245,165,36,.15)':'transparent',border:i<si?'rgba(63,208,201,.35)':i===si?AMBER:'rgba(255,255,255,.08)',color:i<si?TEAL:i===si?AMBER:MUTED}))};});
-      const ck=[['sealed','Packaging sealed and labelled'],['temp','Temperature matches storage'],['match','Item and count match passport']].map(([k,l])=>{const on=!!s.checks[pid+k];return {label:l,mark:on?'✓':'',fill:on?TEAL:'transparent',color:on?TEAL:'#5E687C',onClick:()=>this.setState(st=>({checks:{...st.checks,[pid+k]:!on}}))};});
+          bg:i<si?'rgba(138,174,255,.1)':i===si?'rgba(245,165,36,.15)':'transparent',border:i<si?'rgba(138,174,255,.35)':i===si?AMBER:'rgba(255,255,255,.08)',color:i<si?BLUE:i===si?AMBER:MUTED}))};});
+      const ck=[['sealed','Packaging sealed and labelled'],['temp','Temperature matches storage'],['match','Item and count match passport']].map(([k,l])=>{const on=!!s.checks[pid+k];return {label:l,mark:on?'✓':'',fill:on?BLUE:'transparent',color:on?BLUE:'#5E687C',onClick:()=>this.setState(st=>({checks:{...st.checks,[pid+k]:!on}}))};});
       const nOn=ck.filter(c=>c.mark).length;
       pp={batch:'OP-1116-'+d.code,item:d.item,donor:d.name,area:d.area,portions:d.portions,ready:fmt(d.ready),useBy:fmt(d.last),storage:d.storage,vegColor:d.veg?'#1E8E3E':'#8B4513',vegLabel:d.veg?'VEG':'NON-VEG',
         left:cancelled?'—':dur(left),ringOffset:251.3*(1-(cancelled?0:frac)),ringColor:left<45?RED:AMBER,cancelled,cancelTime:fmt(s.cancelAt),trips,noTrips:trips.length===0,checks:ck,
-        checkText:nOn===3?'Batch accepted by NGO at pickup':nOn+' of 3 checks done',checkColor:nOn===3?TEAL:MUTED};}
+        checkText:nOn===3?'Batch accepted by NGO at pickup':nOn+' of 3 checks done',checkColor:nOn===3?BLUE:MUTED};}
     const cA=[['Kidwai',40,40],['Victoria',60,60],['NIMHANS',20,40]],cB=[['Kidwai',40,40],['Victoria',40,60],['NIMHANS',20,40]];
     const rows=(arr,main)=>arr.map(([g,v,n])=>({gate:g,text:v+'/'+n,color:v<n?RED:main?'#E8ECF3':'#AEB6C6',w:(v/n*100*s.cmp)+'%',bar:v<n?'linear-gradient(90deg,'+(main?AMBER:'#6B7488')+','+RED+')':main?AMBER:'#6B7488'}));
     const rEtaMin=Math.max(0,Math.ceil(8*(1-s.rProg)));
@@ -627,7 +627,7 @@ class Component extends DCLogic {
       progressPct:(t/240*100)+'%',marks,trackRef:this.trackRef,mapRef:this.mapRef,qrRef:this.qrRef,
       scrubDown:e=>{this.dragging=true;e.currentTarget.setPointerCapture(e.pointerId);this.scrubAt(e);},scrubMove:e=>{if(this.dragging)this.scrubAt(e);},scrubUp:()=>{this.dragging=false;},
       shown:s.shown,headColor:total<140?'#FFB4AE':'#fff',deliveredPct:(delivered/140*100)+'%',deliveredText:delivered+' delivered so far',
-      shortText:total<140?(140-total)+' short at NIMHANS':'no shortfalls',shortColor:total<140?RED:TEAL,
+      shortText:total<140?(140-total)+' short at NIMHANS':'no shortfalls',shortColor:total<140?RED:BLUE,
       toastY:toast.on?'0':'-140%',toastOp:toast.on?1:0,toastColor:toast.color||AMBER,toastTitle:toast.title||'',toastBody:toast.body||'',
       replanOp:s.replanning?1:0,
       spinner:React.createElement('div',{style:{width:14,height:14,borderRadius:'50%',border:'2px solid rgba(245,165,36,.25)',borderTopColor:AMBER,animation:'oo-spin .7s linear infinite',flex:'none'}}),
@@ -637,11 +637,11 @@ class Component extends DCLogic {
       searchText:searchMsgs[Math.min(4,s.searchI||0)],startFind:this.startFind,rescueEta:s.cancelAt!=null?fmt(rescueTiming(t,s.cancelAt).drop):'',
       acceptRescue:()=>this.setState({rescueAt:Math.round(t)+1,find:'idle',playing:true}),dismissFind:()=>this.setState({find:'idle'}),
       cmpA:Math.round(120*s.cmp),cmpB:Math.round(100*s.cmp),cmpDelta:Math.round(20*s.cmp),cmpRowsA:rows(cA,true),cmpRowsB:rows(cB,false),
-      rSteps:[0,1,2,3].map(i=>({bg:i<s.rStep||(i===s.rStep&&s.rStep<4)?(i<s.rStep?TEAL:AMBER):'rgba(255,255,255,.1)'})),
+      rSteps:[0,1,2,3].map(i=>({bg:i<s.rStep||(i===s.rStep&&s.rStep<4)?(i<s.rStep?BLUE:AMBER):'rgba(255,255,255,.1)'})),
       rS0:s.rStep===0,rS1:s.rStep===1,rS2:s.rStep===2,rS3:s.rStep===3,rS4:s.rStep===4,
       rPicked:this.rPicked,rArrived:this.rArrived,rDelivered:this.rDelivered,rReset:()=>this.setState({rStep:0,rProg:0}),
-      rEta:s.rProg>=1?'Arrived':rEtaMin+' min · '+(2.6*(1-s.rProg)).toFixed(1)+' km',rProgW:(s.rProg*100)+'%',rArriveDisabled:s.rProg<1,rArriveBg:s.rProg<1?'rgba(255,255,255,.08)':TEAL,rArriveFg:s.rProg<1?'#5E687C':'#04201E',
-      scanLine:React.createElement('div',{style:{position:'absolute',left:'14%',right:'14%',height:3,borderRadius:2,background:TEAL,boxShadow:'0 0 18px 4px rgba(63,208,201,.6)',animation:'oo-scan 2s ease-in-out infinite'}}),
+      rEta:s.rProg>=1?'Arrived':rEtaMin+' min · '+(2.6*(1-s.rProg)).toFixed(1)+' km',rProgW:(s.rProg*100)+'%',rArriveDisabled:s.rProg<1,rArriveBg:s.rProg<1?'rgba(255,255,255,.08)':BLUE,rArriveFg:s.rProg<1?'#5E687C':'#101C38',
+      scanLine:React.createElement('div',{style:{position:'absolute',left:'14%',right:'14%',height:3,borderRadius:2,background:BLUE,boxShadow:'0 0 18px 4px rgba(138,174,255,.6)',animation:'oo-scan 2s ease-in-out infinite'}}),
       feed:s.feed
     };
   }

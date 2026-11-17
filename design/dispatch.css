@@ -344,7 +344,7 @@ html,body {
 }
 
 .demo-gate :is(:is([style*="background:#F5A524"],[style*="background: rgb(245, 165, 36)"]),:is([style*="background: #F5A524"],[style*="background: rgb(245, 165, 36)"])) {
-  background:#285F4C!important
+  background:#395DC2!important
 }
 
 .demo-gate :is([style*="height:8px"],[style*="height: 8px"]) {
@@ -873,3 +873,13 @@ html,body {
 @media (max-width: 900px) {
   .demo-map-label { max-width: 124px; white-space: normal !important; line-height: 1.35; }
 }
+
+/* Shared identity and boxed feature controls. */
+.ootapass-mark { width:32px; height:32px; flex:none; }
+.demo-shell button,.demo-shell [role="button"] { border:1px solid #7184A4!important; border-radius:5px!important; }
+.demo-shell button:not(:disabled):hover,.demo-shell [role="button"]:hover { outline:1px solid #8AAEFF; outline-offset:2px; }
+.demo-navigation button { background:#15223A!important; border:1px solid #4A5D7A!important; margin-bottom:6px; }
+.demo-navigation button[aria-pressed="true"] { background:#293853!important; border-color:#F3C94F!important; color:#FFD65A!important; box-shadow:inset 3px 0 #F3C94F; }
+
+.demo-titlebar a { display:inline-flex; align-items:center; padding:10px 12px; border:1px solid #7184A4; border-radius:4px; background:#17243A; text-decoration:none; }
+.demo-titlebar a { white-space:nowrap!important; flex:none; }

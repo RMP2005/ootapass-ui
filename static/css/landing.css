@@ -1309,3 +1309,16 @@ html[data-surface="workspace"] .lp { display:none; }
  .lp-enter { font-size:12px; padding:13px 16px; }
  .lp-journey-link { margin-top:16px; }
 }
+
+/* Feature links use a visible button boundary instead of bare text. */
+.lp-feature-copy>a,.lp-reasons>div>a,.lp-evidence-sheet>a,.lp-journey-link,.lp-story-footer>a,.lp-skip,.lp-nav nav>a { border:1px solid currentColor; border-radius:5px; padding:12px 16px; min-height:42px; align-items:center; background:#FFFFFF0C; }
+.lp-feature-copy>a:hover,.lp-reasons>div>a:hover,.lp-evidence-sheet>a:hover,.lp-journey-link:hover,.lp-nav nav>a:hover { background:#FFFFFF24; text-decoration:none; }
+.lp .lp-nav-cta { background:#F3C94F; color:#132334; border-color:#132334; font-weight:600; }
+.lp-enter:hover { background:#FFD970; text-decoration:none!important; }
+.lp-chapter-dots a { border:1px solid #F4EBD9; border-radius:3px; min-height:28px; display:grid; place-items:center; font-size:11px; background:#132334; opacity:1; }
+.lp-chapter-dots a:nth-child(1)::after { content:'01'; }
+.lp-chapter-dots a:nth-child(2)::after { content:'02'; }
+.lp-chapter-dots a:nth-child(3)::after { content:'03'; }
+.lp-chapter-dots a.is-active { background:#F3C94F; color:#132334; border-color:#F3C94F; }
+.lp-brand .ootapass-mark { width:30px; height:30px; }
+@media(max-width:699px) { .lp-nav nav>a { padding:10px; font-size:10px; } .lp-skip { padding:8px; min-height:32px; } .lp-journey-link { padding:10px 12px; min-height:40px; } }
