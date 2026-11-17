@@ -883,3 +883,9 @@ html,body {
 
 .demo-titlebar a { display:inline-flex; align-items:center; padding:10px 12px; border:1px solid #7184A4; border-radius:4px; background:#17243A; text-decoration:none; }
 .demo-titlebar a { white-space:nowrap!important; flex:none; }
+@media(max-width:699px) {
+  .demo-titlebar { gap:12px; }
+  .demo-titlebar>div { min-width:0; }
+  .demo-titlebar h1 { font-size:18px; }
+  .demo-titlebar a { max-width:none; font-size:10px; padding:10px 8px; }
+}
